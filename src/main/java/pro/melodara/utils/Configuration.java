@@ -1,4 +1,4 @@
-package pro.melodara;
+package pro.melodara.utils;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;

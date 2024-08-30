@@ -1,4 +1,4 @@
-package pro.melodara;
+package pro.melodara.listeners;
 
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pro.melodara.Melodara;
 
 import java.time.Instant;
 
