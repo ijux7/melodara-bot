@@ -12,6 +12,10 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    // jda & logback
+    implementation("net.dv8tion:JDA:5.1.0")
+    implementation("ch.qos.logback:logback-classic:1.5.7")
 }
 
 test {
