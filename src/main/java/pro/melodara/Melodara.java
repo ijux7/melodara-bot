@@ -5,13 +5,18 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
+import net.dv8tion.jda.api.sharding.ShardManager;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
+
 public class Melodara {
     private static final Logger LOGGER = LoggerFactory.getLogger("melodara/main");
+    private static final Instant STARTUP_TIME = Instant.now();
+    private static ShardManager shardManager = null;
 
 
     public static void main(String[] args) throws Exception {
@@ -67,7 +72,10 @@ public class Melodara {
                         MemberCachePolicy.VOICE
                 )
                 .setActivity(Activity.watching("the bot is starting..."))
-                .setStatus(OnlineStatus.IDLE);
+                .setStatus(OnlineStatus.IDLE)
+                .addEventListeners(new Listener())
+                .setShardsTotal(1)
+                .setShards(0);
 
 
         // welcome message
@@ -80,6 +88,16 @@ public class Melodara {
 
 
         // starting
-        shardManagerBuilder.build();
+        shardManager = shardManagerBuilder.build();
+    }
+
+
+    public static ShardManager getShardManager() {
+        assert shardManager != null : "shardManager is null";
+        return shardManager;
+    }
+
+    public static Instant getStartupTime() {
+        return STARTUP_TIME;
     }
 }
