@@ -14,7 +14,7 @@ public class Configuration {
     public void load(@NotNull String filename) throws IOException {
         LOGGER.info("Loading configuration from '{}' ...", filename);
         props.load(Configuration.class.getClassLoader().getResourceAsStream(filename));
-        LOGGER.info("Successfully loaded configuration from '{}' (keys {})", filename, props.keySet().size());
+        LOGGER.info("Successfully loaded configuration from '{}' ({} properties)", filename, props.keySet().size());
     }
 
     public static String get(@NotNull String key) {
