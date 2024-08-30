@@ -10,7 +10,11 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pro.melodara.commands.Test;
+import pro.melodara.commands.TestBro;
 import pro.melodara.listeners.Listener;
+import pro.melodara.utils.commands.CommandHandler;
+import pro.melodara.utils.commands.CommandManager;
 import pro.melodara.utils.Configuration;
 
 import java.time.Instant;
@@ -19,6 +23,7 @@ public class Melodara {
     private static final Logger LOGGER = LoggerFactory.getLogger("melodara/main");
     private static final Instant STARTUP_TIME = Instant.now();
     private static ShardManager shardManager = null;
+    private static CommandManager commandManager = null;
 
 
     public static void main(String[] args) throws Exception {
@@ -29,6 +34,14 @@ public class Melodara {
         // static variables
         final String PROJECT_NAME = Configuration.get("melodara.main.name");
         final String VERSION = Configuration.get("melodara.main.version");
+
+
+        // adding commands
+        commandManager = CommandManager.create()
+                .addCommands(
+                        new Test(),
+                        new TestBro()
+                );
 
 
         // building sharded bot
@@ -75,7 +88,10 @@ public class Melodara {
                 )
                 .setActivity(Activity.watching("the bot is starting..."))
                 .setStatus(OnlineStatus.IDLE)
-                .addEventListeners(new Listener())
+                .addEventListeners(
+                        new Listener(),
+                        new CommandHandler()
+                )
                 .setShardsTotal(1)
                 .setShards(0);
 
@@ -97,6 +113,11 @@ public class Melodara {
     public static ShardManager getShardManager() {
         assert shardManager != null : "shardManager is null";
         return shardManager;
+    }
+
+    public static CommandManager getCommandManager() {
+        assert commandManager != null : "commandManager is null";
+        return commandManager;
     }
 
     public static Instant getStartupTime() {

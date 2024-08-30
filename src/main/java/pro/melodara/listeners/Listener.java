@@ -20,10 +20,12 @@ public class Listener extends ListenerAdapter {
         Melodara.getShardManager().setStatus(OnlineStatus.ONLINE);
 
         LOGGER.info(
-                "SHARD #{} | Startup time: {} secs; User#tag: {}",
+                "shard {} | Startup time: {} secs; User#tag: {}",
                 event.getJDA().getShardInfo().getShardId(),
                 Instant.now().getEpochSecond()  - Melodara.getStartupTime().getEpochSecond(),
                 event.getJDA().getSelfUser().getAsTag()
         );
+
+        Melodara.getCommandManager().updateCommandsGlobally(event.getJDA());
     }
 }
