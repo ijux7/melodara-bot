@@ -36,6 +36,8 @@ public class CommandHandler extends ListenerAdapter {
         if (command == null) {
             LOGGER.error("No command with name '{} {} {}' was found!", commandName, subcommandName, subcommandGroup);
             return;
+        } else if (command.guildOnly && event.getGuild() == null) {
+            return;
         }
 
         command.run(event);
