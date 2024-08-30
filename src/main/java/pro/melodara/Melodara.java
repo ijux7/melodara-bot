@@ -10,8 +10,8 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pro.melodara.commands.Test;
-import pro.melodara.commands.TestBro;
+import pro.melodara.commands.Join;
+import pro.melodara.commands.Leave;
 import pro.melodara.listeners.Listener;
 import pro.melodara.utils.commands.CommandHandler;
 import pro.melodara.utils.commands.CommandManager;
@@ -39,8 +39,8 @@ public class Melodara {
         // adding commands
         commandManager = CommandManager.create()
                 .addCommands(
-                        new Test(),
-                        new TestBro()
+                        new Join(),
+                        new Leave()
                 );
 
 
