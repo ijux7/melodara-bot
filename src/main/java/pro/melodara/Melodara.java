@@ -1,5 +1,6 @@
 package pro.melodara;
 
+import dev.arbjerg.lavalink.libraries.jda.JDAVoiceUpdateListener;
 import net.dv8tion.jda.api.JDAInfo;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -10,12 +11,13 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pro.melodara.commands.Join;
+import pro.melodara.commands.Play;
 import pro.melodara.commands.Leave;
 import pro.melodara.listeners.Listener;
 import pro.melodara.utils.commands.CommandHandler;
 import pro.melodara.utils.commands.CommandManager;
 import pro.melodara.utils.Configuration;
+import pro.melodara.utils.music.LavaManager;
 
 import java.time.Instant;
 
@@ -24,6 +26,7 @@ public class Melodara {
     private static final Instant STARTUP_TIME = Instant.now();
     private static ShardManager shardManager = null;
     private static CommandManager commandManager = null;
+    private static LavaManager lavaManager = null;
 
 
     public static void main(String[] args) throws Exception {
@@ -34,20 +37,26 @@ public class Melodara {
         // static variables
         final String PROJECT_NAME = Configuration.get("melodara.main.name");
         final String VERSION = Configuration.get("melodara.main.version");
+        final String TOKEN = Configuration.get("melodara.bot.discord.authentication");
 
 
         // adding commands
         commandManager = CommandManager.create()
                 .addCommands(
-                        new Join(),
+                        new Play(),
                         new Leave()
                 );
 
 
+        // lavalink-client
+        lavaManager = LavaManager.create(TOKEN);
+        lavaManager.registerHost("China", "localhost:10300", "12345678");
+
+        // TODO: wait until lavalink client connects to all nodes, then start bot
+
         // building sharded bot
-        DefaultShardManagerBuilder shardManagerBuilder = DefaultShardManagerBuilder.createDefault(
-                Configuration.get("melodara.bot.discord.authentication")
-        )
+        DefaultShardManagerBuilder shardManagerBuilder = DefaultShardManagerBuilder.createDefault(TOKEN)
+                .setVoiceDispatchInterceptor(new JDAVoiceUpdateListener(lavaManager.getLavalinkClient()))
                 .disableIntents(
                         GatewayIntent.AUTO_MODERATION_CONFIGURATION,
                         GatewayIntent.DIRECT_MESSAGE_POLLS,
@@ -118,6 +127,11 @@ public class Melodara {
     public static CommandManager getCommandManager() {
         assert commandManager != null : "commandManager is null";
         return commandManager;
+    }
+
+    public static LavaManager getLavaManager() {
+        assert lavaManager != null : "lavaManager is null";
+        return lavaManager;
     }
 
     public static Instant getStartupTime() {
