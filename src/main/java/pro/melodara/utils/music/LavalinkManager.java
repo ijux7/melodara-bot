@@ -16,13 +16,13 @@ import pro.melodara.Melodara;
 
 import java.util.HashMap;
 
-public class LavaManager {
+public class LavalinkManager {
     private final Logger LAVA_LOGGER = LoggerFactory.getLogger("melodara/lavalink");
     private final Logger NODE_LOGGER = LoggerFactory.getLogger("melodara/nodes");
     private final HashMap<Long, MusicManager> voiceManagers = new HashMap<>();
     private static LavalinkClient client = null;
 
-    public LavaManager(@NotNull String token) {
+    public LavalinkManager(@NotNull String token) {
         client = new LavalinkClient(Helpers.getUserIdFromToken(token));
         LAVA_LOGGER.info("Lavalink client has been initialized!");
 
@@ -95,8 +95,8 @@ public class LavaManager {
     /**
      * Initializing class
      */
-    public static LavaManager create(@NotNull String token) {
-        return new LavaManager(token);
+    public static LavalinkManager create(@NotNull String token) {
+        return new LavalinkManager(token);
     }
 
     public void registerHost(

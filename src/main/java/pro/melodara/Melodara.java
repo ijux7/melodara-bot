@@ -16,7 +16,7 @@ import pro.melodara.listeners.Listener;
 import pro.melodara.utils.commands.CommandHandler;
 import pro.melodara.utils.commands.CommandManager;
 import pro.melodara.utils.Configuration;
-import pro.melodara.utils.music.LavaManager;
+import pro.melodara.utils.music.LavalinkManager;
 
 import java.time.Instant;
 
@@ -25,7 +25,7 @@ public class Melodara {
     private static final Instant STARTUP_TIME = Instant.now();
     private static ShardManager shardManager = null;
     private static CommandManager commandManager = null;
-    private static LavaManager lavaManager = null;
+    private static LavalinkManager lavaManager = null;
 
 
     public static void main(String[] args) throws Exception {
@@ -47,7 +47,7 @@ public class Melodara {
 
 
         // lavalink-client
-        lavaManager = LavaManager.create(TOKEN);
+        lavaManager = LavalinkManager.create(TOKEN);
         lavaManager.registerHost("China", "localhost:10300", "12345678");
 
         // TODO: wait until lavalink client connects to all nodes, then start bot
@@ -127,7 +127,7 @@ public class Melodara {
         return commandManager;
     }
 
-    public static LavaManager getLavaManager() {
+    public static LavalinkManager getLavaManager() {
         assert lavaManager != null : "lavaManager is null";
         return lavaManager;
     }
