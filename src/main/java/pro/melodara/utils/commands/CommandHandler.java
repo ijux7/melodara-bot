@@ -40,6 +40,9 @@ public class CommandHandler extends ListenerAdapter {
             return;
         }
 
-        command.run(event);
+        event.deferReply().queue(
+                s -> command.run(event),
+                f -> LOGGER.error("Failed to defer reply", f)
+        );
     }
 }
