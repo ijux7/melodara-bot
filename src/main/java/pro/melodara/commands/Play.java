@@ -40,8 +40,6 @@ public class Play extends CommandSample {
                 trackRaw.toLowerCase().startsWith("https://") ? trackRaw : "ytsearch:" + trackRaw
                 )
                 .subscribe(new MusicHandler(event, musicManager));
-
-        event.getHook().editOriginal("OK").queue();
     }
 
     private void joinToVoiceChannel(Guild guild, Member member) {
@@ -59,7 +57,9 @@ public class Play extends CommandSample {
 
         AudioManager manager = guild.getAudioManager();
 
-        if (!manager.isConnected())
+        if (!manager.isConnected()) {
             manager.openAudioConnection(channel);
+            manager.setSelfDeafened(true);
+        }
     }
 }
