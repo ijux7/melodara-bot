@@ -3,6 +3,7 @@ package pro.melodara.utils.music;
 import dev.arbjerg.lavalink.client.LavalinkClient;
 import dev.arbjerg.lavalink.client.Link;
 import dev.arbjerg.lavalink.client.player.LavalinkPlayer;
+import net.dv8tion.jda.api.entities.Message;
 
 import java.util.Optional;
 
@@ -10,6 +11,8 @@ public class MusicManager {
     private final long guildId;
     private final LavalinkClient lavalink;
     private final MusicQueue queueManager = new MusicQueue(this);
+    private Message message = null;
+    private Message lastRequestMessage = null;
 
     public MusicManager(long guildId, LavalinkClient lavalink) {
         this.lavalink = lavalink;
@@ -36,5 +39,21 @@ public class MusicManager {
 
     public MusicQueue getQueueManager() {
         return queueManager;
+    }
+
+    public Message getMessage() {
+        return message;
+    }
+
+    public void setMessage(Message message) {
+        this.message = message;
+    }
+
+    public Message getLastRequestMessage() {
+        return lastRequestMessage;
+    }
+
+    public void setLastRequestMessage(Message lastRequestMessage) {
+        this.lastRequestMessage = lastRequestMessage;
     }
 }

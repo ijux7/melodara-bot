@@ -2,21 +2,22 @@ package pro.melodara.utils.music;
 
 import dev.arbjerg.lavalink.client.player.Track;
 import dev.arbjerg.lavalink.protocol.v4.Message;
+import net.dv8tion.jda.api.EmbedBuilder;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
 public class MusicQueue {
-    private final MusicManager mq;
+    private final MusicManager mg;
     private final Queue<Track> queue = new LinkedList<>();
 
     public MusicQueue(MusicManager guildMusicManager) {
-        mq = guildMusicManager;
+        mg = guildMusicManager;
     }
 
     public void enqueue(Track track) {
-        mq.getPlayer().ifPresentOrElse(
+        mg.getPlayer().ifPresentOrElse(
                 player -> {
                     if (player.getTrack() == null) startTrack(track);
                     else queue.offer(track);
@@ -28,7 +29,7 @@ public class MusicQueue {
     public void enqueuePlaylist(List<Track> tracks) {
         queue.addAll(tracks);
 
-        mq.getPlayer().ifPresentOrElse(
+        mg.getPlayer().ifPresentOrElse(
                 player -> {
                     if (player.getTrack() == null) startTrack(queue.poll());
                 },
@@ -37,7 +38,18 @@ public class MusicQueue {
     }
 
     public void onTrackStart(Track track) {
-        
+        net.dv8tion.jda.api.entities.Message message = mg.getMessage();
+
+        if (message != null) message.delete().queue(s -> {}, f -> {});
+
+        mg.getLastRequestMessage().getChannel().sendMessageEmbeds(
+                new EmbedBuilder()
+                        .setTitle(track.getInfo().getTitle())
+                        .setUrl(track.getInfo().getUri())
+                        .setDescription("Now playing music from " + track.getInfo().getSourceName() + "!")
+                        .setThumbnail(track.getInfo().getArtworkUrl())
+                        .build()
+        ).queue(mg::setMessage, f -> mg.setMessage(null));
     }
 
     public void onTrackEnd(Track lastTrack, Message.EmittedEvent.TrackEndEvent.AudioTrackEndReason endReason) {
@@ -55,7 +67,7 @@ public class MusicQueue {
     }
 
     private void startTrack(Track track) {
-        mq.getLink().ifPresent(
+        mg.getLink().ifPresent(
                 (link) -> link.createOrUpdatePlayer()
                         .setTrack(track)
                         .setVolume(75)

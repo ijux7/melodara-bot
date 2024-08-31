@@ -20,38 +20,49 @@ public class MusicHandler extends AbstractAudioLoadResultHandler {
 
     @Override
     public void loadFailed(@NotNull LoadFailed loadFailed) {
-
+        event.getHook().editOriginal(":x: Failed to load your track: " + loadFailed.getException().getMessage())
+                .queue();
     }
 
     @Override
     public void ontrackLoaded(@NotNull TrackLoaded trackLoaded) {
         Track track = trackLoaded.getTrack();
-
-        track.setUserData(new MusicRequesterData(event.getUser().getIdLong()));
-
-        mg.getQueueManager().enqueue(track);
-
-
+        addTrackToQueue(track);
     }
 
     @Override
-    public void onPlaylistLoaded(@NotNull PlaylistLoaded playlistLoaded) {
+    public void onPlaylistLoaded(@NotNull PlaylistLoaded playlist) {
+        for (Track track : playlist.getTracks()) {
+            track.setUserData(new MusicRequesterData(event.getUser().getIdLong()));
+        }
 
+        event.getHook().editOriginal(
+                ":notes: Adding **" + playlist.getTracks().size() + "tracks** to queue..."
+                )
+                .queue(s -> {
+                    mg.setLastRequestMessage(s);
+                    mg.getQueueManager().enqueuePlaylist(playlist.getTracks());
+                }, f -> {});;
     }
 
     @Override
     public void onSearchResultLoaded(@NotNull SearchResult searchResult) {
         Track track = searchResult.getTracks().get(0);
-
-        track.setUserData(new MusicRequesterData(event.getUser().getIdLong()));
-
-        mg.getQueueManager().enqueue(track);
-
-
+        addTrackToQueue(track);
     }
 
     @Override
     public void noMatches() {
+        event.getHook().editOriginal(":x: No track was found!").queue();
+    }
 
+    private void addTrackToQueue(Track track) {
+        track.setUserData(new MusicRequesterData(event.getUser().getIdLong()));
+
+        event.getHook().editOriginal(":notes: Adding **" + track.getInfo().getTitle() + "** to queue...")
+                .queue(s -> {
+                    mg.setLastRequestMessage(s);
+                    mg.getQueueManager().enqueue(track);
+                }, f -> {});
     }
 }
