@@ -23,6 +23,8 @@ import java.time.Instant;
 public class Melodara {
     private static final Logger LOGGER = LoggerFactory.getLogger("melodara/main");
     private static final Instant STARTUP_TIME = Instant.now();
+    private static String PROJECT_NAME = null;
+    private static String VERSION = null;
     private static ShardManager shardManager = null;
     private static CommandManager commandManager = null;
     private static LavalinkManager lavaManager = null;
@@ -34,8 +36,8 @@ public class Melodara {
 
 
         // static variables
-        final String PROJECT_NAME = Configuration.get("melodara.main.name");
-        final String VERSION = Configuration.get("melodara.main.version");
+        PROJECT_NAME = Configuration.get("melodara.main.name");
+        VERSION = Configuration.get("melodara.main.version");
         final String TOKEN = Configuration.get("melodara.bot.discord.authentication");
 
 
@@ -134,5 +136,13 @@ public class Melodara {
 
     public static Instant getStartupTime() {
         return STARTUP_TIME;
+    }
+
+    public static String getProjectName() {
+        return PROJECT_NAME;
+    }
+
+    public static String getVERSION() {
+        return VERSION;
     }
 }
