@@ -12,7 +12,6 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pro.melodara.commands.Play;
-import pro.melodara.commands.Leave;
 import pro.melodara.listeners.Listener;
 import pro.melodara.utils.commands.CommandHandler;
 import pro.melodara.utils.commands.CommandManager;
@@ -43,8 +42,7 @@ public class Melodara {
         // adding commands
         commandManager = CommandManager.create()
                 .addCommands(
-                        new Play(),
-                        new Leave()
+                        new Play()
                 );
 
 
