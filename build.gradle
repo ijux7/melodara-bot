@@ -7,6 +7,9 @@ version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+    maven {
+        url 'https://maven.lavalink.dev/releases'
+    }
 }
 
 dependencies {
@@ -16,6 +19,9 @@ dependencies {
     // jda & logback
     implementation("net.dv8tion:JDA:5.1.0")
     implementation("ch.qos.logback:logback-classic:1.5.7")
+
+    // lavaplayer
+    implementation("dev.arbjerg:lavalink-client:3.0.0")
 }
 
 test {
