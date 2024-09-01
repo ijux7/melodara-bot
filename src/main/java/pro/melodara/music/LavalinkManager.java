@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pro.melodara.Melodara;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class LavalinkManager {
@@ -24,6 +25,7 @@ public class LavalinkManager {
     private final Logger LOGGER = LoggerFactory.getLogger("melodara/lavalink");
     private final Melodara melodara;
     private final LavalinkClient client;
+    private final HashMap<Long, MusicManager> musicManagers = new HashMap<>();
 
     private static int TOTAL_NODES = 0;
     private static int ACTIVATED_NODES = 0;
@@ -108,5 +110,16 @@ public class LavalinkManager {
 
     public LavalinkClient getClient() {
         return client;
+    }
+
+    public MusicManager getMusicManager(long guildId) {
+        synchronized(this) {
+            MusicManager musicManager = musicManagers.get(guildId);
+
+            if (musicManager == null)
+                musicManager = this.musicManagers.put(guildId, new MusicManager(guildId, this));
+
+            return musicManager;
+        }
     }
 }
