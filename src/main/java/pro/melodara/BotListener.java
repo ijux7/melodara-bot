@@ -1,4 +1,4 @@
-package pro.melodara.listeners;
+package pro.melodara;
 
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -7,11 +7,10 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pro.melodara.Melodara;
 
 import java.time.Instant;
 
-public class Listener extends ListenerAdapter {
+public class BotListener extends ListenerAdapter {
     private final Logger LOGGER = LoggerFactory.getLogger("melodara/events");
 
     @Override

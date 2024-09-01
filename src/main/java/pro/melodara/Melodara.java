@@ -1,6 +1,5 @@
 package pro.melodara;
 
-import dev.arbjerg.lavalink.libraries.jda.JDAVoiceUpdateListener;
 import net.dv8tion.jda.api.JDAInfo;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -12,12 +11,8 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pro.melodara.commands.Play;
-import pro.melodara.listeners.Listener;
 import pro.melodara.utils.commands.CommandHandler;
 import pro.melodara.utils.commands.CommandManager;
-import pro.melodara.utils.Configuration;
-import pro.melodara.utils.music.LavalinkManager;
-import pro.melodara.utils.music.player.PlayerListener;
 
 import java.time.Instant;
 
@@ -28,7 +23,6 @@ public class Melodara {
     private static String VERSION = null;
     private static ShardManager shardManager = null;
     private static CommandManager commandManager = null;
-    private static LavalinkManager lavaManager = null;
 
 
     public static void main(String[] args) throws Exception {
@@ -50,8 +44,6 @@ public class Melodara {
 
 
         // lavalink-client
-        lavaManager = LavalinkManager.create(TOKEN);
-        lavaManager.registerHost("China", "localhost:10300", "12345678");
 
         // TODO: move nodes data to .properties
 
@@ -59,7 +51,7 @@ public class Melodara {
 
         // building sharded bot
         DefaultShardManagerBuilder shardManagerBuilder = DefaultShardManagerBuilder.createDefault(TOKEN)
-                .setVoiceDispatchInterceptor(new JDAVoiceUpdateListener(lavaManager.getLavalinkClient()))
+//                .setVoiceDispatchInterceptor(new JDAVoiceUpdateListener(lavaManager.getLavalinkClient()))
                 .disableIntents(
                         GatewayIntent.AUTO_MODERATION_CONFIGURATION,
                         GatewayIntent.DIRECT_MESSAGE_POLLS,
@@ -101,9 +93,8 @@ public class Melodara {
                 .setActivity(Activity.watching("the bot is starting..."))
                 .setStatus(OnlineStatus.IDLE)
                 .addEventListeners(
-                        new Listener(),
-                        new CommandHandler(),
-                        new PlayerListener()
+                        new BotListener(),
+                        new CommandHandler()
                 )
                 .setShardsTotal(1)
                 .setShards(0);
@@ -131,11 +122,6 @@ public class Melodara {
     public static CommandManager getCommandManager() {
         assert commandManager != null : "commandManager is null";
         return commandManager;
-    }
-
-    public static LavalinkManager getLavaManager() {
-        assert lavaManager != null : "lavaManager is null";
-        return lavaManager;
     }
 
     public static Instant getStartupTime() {
