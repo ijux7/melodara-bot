@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pro.melodara.Melodara;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class LavalinkManager {
@@ -25,6 +24,9 @@ public class LavalinkManager {
     private final Logger LOGGER = LoggerFactory.getLogger("melodara/lavalink");
     private final Melodara melodara;
     private final LavalinkClient client;
+
+    private static int TOTAL_NODES = 0;
+    private static int ACTIVATED_NODES = 0;
 
     private static final int SESSION_INVALID = 4006;
     private static final int DISCONNECTED = 4014;
@@ -46,6 +48,11 @@ public class LavalinkManager {
             LavalinkNode node = event.getNode();
 
             LOGGER.info("Lavalink node '{}' has been connected with session '{}'", node.getName(), node.getSessionId());
+
+            ACTIVATED_NODES++;
+
+            if (ACTIVATED_NODES == TOTAL_NODES && !melodara.BOT_STARTED_UP)
+                melodara.startBot();
         });
 
         // stats
@@ -95,6 +102,7 @@ public class LavalinkManager {
 
         for (NodeOptions node : nodes) {
             this.client.addNode(node);
+            TOTAL_NODES++;
         }
     }
 

@@ -26,6 +26,7 @@ public class Melodara {
     private static final Logger LOGGER = LoggerFactory.getLogger("melodara/main");
 
     public static final Instant STARTUP_TIME = Instant.now();
+    public boolean BOT_STARTED_UP = false;
     public static String PROJECT_NAME = null;
     public static String VERSION = null;
 
@@ -46,12 +47,6 @@ public class Melodara {
                 Configuration.get("melodara.bot.discord.authentication")
         );
         loadNodes(Configuration.get("melodara.lavalink.nodes"));
-
-
-        // TODO: move nodes data to .properties
-        // TODO: wait until lavalink client connects to all nodes, then start bot
-
-        startBot();
     }
 
     public static void main(String[] args) throws Exception {
@@ -149,6 +144,7 @@ public class Melodara {
     }
 
     public void startBot() {
+        BOT_STARTED_UP = true;
         this.shardManager = getShardManagerBuilder().build();
     }
 
