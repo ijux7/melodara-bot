@@ -24,9 +24,11 @@ import java.util.List;
 
 public class Melodara {
     private static final Logger LOGGER = LoggerFactory.getLogger("melodara/main");
+
     public static final Instant STARTUP_TIME = Instant.now();
     public static String PROJECT_NAME = null;
     public static String VERSION = null;
+
     private ShardManager shardManager = null;
     private final CommandManager commandManager;
     private final LavalinkManager lavalinkManager;
