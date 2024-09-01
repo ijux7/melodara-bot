@@ -12,19 +12,24 @@ import java.time.Instant;
 
 public class BotListener extends ListenerAdapter {
     private final Logger LOGGER = LoggerFactory.getLogger("melodara/events");
+    private final Melodara melodara;
+
+    public BotListener(Melodara melodara) {
+        this.melodara = melodara;
+    }
 
     @Override
     public void onReady(@NotNull ReadyEvent event) {
-        Melodara.getShardManager().setActivity(Activity.listening("Linkin Park"));
-        Melodara.getShardManager().setStatus(OnlineStatus.ONLINE);
+        melodara.getShardManager().setActivity(Activity.listening("Linkin Park"));
+        melodara.getShardManager().setStatus(OnlineStatus.ONLINE);
 
         LOGGER.info(
                 "shard {} | Startup time: {} secs; User#tag: {}",
                 event.getJDA().getShardInfo().getShardId(),
-                Instant.now().getEpochSecond()  - Melodara.getStartupTime().getEpochSecond(),
+                Instant.now().getEpochSecond()  - Melodara.STARTUP_TIME.getEpochSecond(),
                 event.getJDA().getSelfUser().getAsTag()
         );
 
-        Melodara.getCommandManager().updateCommandsGlobally(event.getJDA());
+        melodara.getCommandManager().updateCommandsGlobally(event.getJDA());
     }
 }

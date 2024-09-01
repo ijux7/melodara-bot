@@ -9,16 +9,19 @@ import pro.melodara.Melodara;
 
 public class CommandHandler extends ListenerAdapter {
     private final Logger LOGGER = LoggerFactory.getLogger("melodara/handlers");
+    private final Melodara melodara;
 
-    public CommandHandler() {
+    public CommandHandler(Melodara melodara) {
+        this.melodara = melodara;
+
         LOGGER.info("Loading slash (/) commands ...");
 
-        if (Melodara.getCommandManager().getCommands().isEmpty()) {
+        if (melodara.getCommandManager().getCommands().isEmpty()) {
             LOGGER.warn("No slash commands has been loaded!");
         } else {
             LOGGER.info(
                     "Loaded {} slash (/) commands! Ready to handle slash command events ...",
-                    Melodara.getCommandManager().getCommands().size()
+                    melodara.getCommandManager().getCommands().size()
             );
         }
     }
@@ -31,7 +34,7 @@ public class CommandHandler extends ListenerAdapter {
         String subcommandName = event.getSubcommandName();
         String subcommandGroup = event.getSubcommandGroup();
 
-        CommandSample command = Melodara.getCommandManager().getCommand(commandName, subcommandName, subcommandGroup);
+        CommandSample command = melodara.getCommandManager().getCommand(commandName, subcommandName, subcommandGroup);
 
         if (command == null) {
             LOGGER.error("No command with name '{} {} {}' was found!", commandName, subcommandName, subcommandGroup);

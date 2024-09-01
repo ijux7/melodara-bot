@@ -18,39 +18,55 @@ import java.time.Instant;
 
 public class Melodara {
     private static final Logger LOGGER = LoggerFactory.getLogger("melodara/main");
-    private static final Instant STARTUP_TIME = Instant.now();
-    private static String PROJECT_NAME = null;
-    private static String VERSION = null;
-    private static ShardManager shardManager = null;
-    private static CommandManager commandManager = null;
+    public static final Instant STARTUP_TIME = Instant.now();
+    public static String PROJECT_NAME = null;
+    public static String VERSION = null;
+    private final ShardManager shardManager;
+    private final CommandManager commandManager;
 
+    public Melodara() {
+        // command manager
+        this.commandManager = CommandManager.create()
+                .addCommands(
+                        new Play()
+                );
+
+        // discord bot
+        DefaultShardManagerBuilder shardManagerBuilder = defaultShardManagerBuilder();
+
+        // startup bot
+        this.shardManager = shardManagerBuilder.build();
+    }
 
     public static void main(String[] args) throws Exception {
         // loading configuration
         new Configuration().load("./configuration.properties");
 
-
         // static variables
         PROJECT_NAME = Configuration.get("melodara.main.name");
         VERSION = Configuration.get("melodara.main.version");
-        final String TOKEN = Configuration.get("melodara.bot.discord.authentication");
-
-
-        // adding commands
-        commandManager = CommandManager.create()
-                .addCommands(
-                        new Play()
-                );
-
 
         // lavalink-client
-
         // TODO: move nodes data to .properties
-
         // TODO: wait until lavalink client connects to all nodes, then start bot
 
-        // building sharded bot
-        DefaultShardManagerBuilder shardManagerBuilder = DefaultShardManagerBuilder.createDefault(TOKEN)
+        // welcome message
+        LOGGER.info(" ");
+        LOGGER.info(
+                "Welcome to '{}' version '{}'! Initializing '{}.class' right now ...",
+                PROJECT_NAME, VERSION, Melodara.class.getSimpleName()
+        );
+        LOGGER.info("JDA version: JDA-{}", JDAInfo.VERSION);
+        LOGGER.info(" ");
+
+        // initializing class
+        new Melodara();
+    }
+
+    private DefaultShardManagerBuilder defaultShardManagerBuilder() {
+        return DefaultShardManagerBuilder.createDefault(
+                        Configuration.get("melodara.bot.discord.authentication")
+                )
 //                .setVoiceDispatchInterceptor(new JDAVoiceUpdateListener(lavaManager.getLavalinkClient()))
                 .disableIntents(
                         GatewayIntent.AUTO_MODERATION_CONFIGURATION,
@@ -93,46 +109,18 @@ public class Melodara {
                 .setActivity(Activity.watching("the bot is starting..."))
                 .setStatus(OnlineStatus.IDLE)
                 .addEventListeners(
-                        new BotListener(),
-                        new CommandHandler()
+                        new BotListener(this),
+                        new CommandHandler(this)
                 )
                 .setShardsTotal(1)
                 .setShards(0);
-
-
-        // welcome message
-        LOGGER.info(" ");
-        LOGGER.info(
-                "Welcome to '{}' version '{}'! Initializing 'JDA {}' right now ...",
-                PROJECT_NAME, VERSION, JDAInfo.VERSION
-        );
-        LOGGER.info(" ");
-
-
-        // starting
-        shardManager = shardManagerBuilder.build();
     }
 
-
-    public static ShardManager getShardManager() {
-        assert shardManager != null : "shardManager is null";
+    public ShardManager getShardManager() {
         return shardManager;
     }
 
-    public static CommandManager getCommandManager() {
-        assert commandManager != null : "commandManager is null";
+    public CommandManager getCommandManager() {
         return commandManager;
-    }
-
-    public static Instant getStartupTime() {
-        return STARTUP_TIME;
-    }
-
-    public static String getProjectName() {
-        return PROJECT_NAME;
-    }
-
-    public static String getVERSION() {
-        return VERSION;
     }
 }
