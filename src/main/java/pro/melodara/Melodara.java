@@ -52,6 +52,8 @@ public class Melodara {
         lavaManager = LavalinkManager.create(TOKEN);
         lavaManager.registerHost("China", "localhost:10300", "12345678");
 
+        // TODO: move nodes data to .properties
+
         // TODO: wait until lavalink client connects to all nodes, then start bot
 
         // building sharded bot
