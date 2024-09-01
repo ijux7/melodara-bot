@@ -1,5 +1,8 @@
 package pro.melodara;
 
+import dev.arbjerg.lavalink.client.NodeOptions;
+import dev.arbjerg.lavalink.client.loadbalancing.RegionGroup;
+import dev.arbjerg.lavalink.libraries.jda.JDAVoiceUpdateListener;
 import net.dv8tion.jda.api.JDAInfo;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -11,18 +14,22 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pro.melodara.commands.Play;
+import pro.melodara.music.LavalinkManager;
 import pro.melodara.utils.commands.CommandHandler;
 import pro.melodara.utils.commands.CommandManager;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Melodara {
     private static final Logger LOGGER = LoggerFactory.getLogger("melodara/main");
     public static final Instant STARTUP_TIME = Instant.now();
     public static String PROJECT_NAME = null;
     public static String VERSION = null;
-    private final ShardManager shardManager;
+    private ShardManager shardManager = null;
     private final CommandManager commandManager;
+    private final LavalinkManager lavalinkManager;
 
     public Melodara() {
         // command manager
@@ -31,11 +38,18 @@ public class Melodara {
                         new Play()
                 );
 
-        // discord bot
-        DefaultShardManagerBuilder shardManagerBuilder = defaultShardManagerBuilder();
+        // lavalink manager
+        this.lavalinkManager = LavalinkManager.create(
+                this,
+                Configuration.get("melodara.bot.discord.authentication")
+        );
+        loadNodes(Configuration.get("melodara.lavalink.nodes"));
 
-        // startup bot
-        this.shardManager = shardManagerBuilder.build();
+
+        // TODO: move nodes data to .properties
+        // TODO: wait until lavalink client connects to all nodes, then start bot
+
+        startBot();
     }
 
     public static void main(String[] args) throws Exception {
@@ -45,10 +59,6 @@ public class Melodara {
         // static variables
         PROJECT_NAME = Configuration.get("melodara.main.name");
         VERSION = Configuration.get("melodara.main.version");
-
-        // lavalink-client
-        // TODO: move nodes data to .properties
-        // TODO: wait until lavalink client connects to all nodes, then start bot
 
         // welcome message
         LOGGER.info(" ");
@@ -63,11 +73,31 @@ public class Melodara {
         new Melodara();
     }
 
-    private DefaultShardManagerBuilder defaultShardManagerBuilder() {
+    private void loadNodes(String config) {
+        String[] nodesRaw = config.split(";");
+        List<NodeOptions> nodes = new ArrayList<>();
+
+        for (String node : nodesRaw) {
+            String[] nodeData = node.split(","); // ip:port,password,name;...
+
+            nodes.add(
+                    new NodeOptions.Builder()
+                            .setName(nodeData[2])
+                            .setServerUri("ws://" + nodeData[0])
+                            .setPassword(nodeData[1])
+                            .setRegionFilter(RegionGroup.EUROPE)
+                            .build()
+            );
+        }
+
+        this.lavalinkManager.addNodes(nodes);
+    }
+
+    private DefaultShardManagerBuilder getShardManagerBuilder() {
         return DefaultShardManagerBuilder.createDefault(
                         Configuration.get("melodara.bot.discord.authentication")
                 )
-//                .setVoiceDispatchInterceptor(new JDAVoiceUpdateListener(lavaManager.getLavalinkClient()))
+                .setVoiceDispatchInterceptor(new JDAVoiceUpdateListener(lavalinkManager.getClient()))
                 .disableIntents(
                         GatewayIntent.AUTO_MODERATION_CONFIGURATION,
                         GatewayIntent.DIRECT_MESSAGE_POLLS,
@@ -116,11 +146,19 @@ public class Melodara {
                 .setShards(0);
     }
 
+    public void startBot() {
+        this.shardManager = getShardManagerBuilder().build();
+    }
+
     public ShardManager getShardManager() {
         return shardManager;
     }
 
     public CommandManager getCommandManager() {
         return commandManager;
+    }
+
+    public LavalinkManager getLavalinkManager() {
+        return lavalinkManager;
     }
 }
