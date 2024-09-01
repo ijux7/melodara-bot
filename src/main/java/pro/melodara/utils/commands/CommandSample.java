@@ -9,8 +9,8 @@ import java.util.List;
 public class CommandSample implements CommandSampleImpl {
     public String name;
     public String description;
-    public List<CommandSample> children = new ArrayList<>();
-    public List<OptionData> options = new ArrayList<>();
+    public final List<CommandSample> children = new ArrayList<>();
+    public final List<OptionData> options = new ArrayList<>();
     public boolean guildOnly = true;
 
     @Override
