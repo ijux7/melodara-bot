@@ -69,8 +69,8 @@ public class LavalinkManager {
                 catch (Exception error) {
                     LAVA_LOGGER.error("Error while reconnecting to guild '{}'", guildId, error);
                 }
-
-
+            } else if (event.getCode() == 4014) { // DISCONNECTED
+                getOrCreateMusicManager(event.getGuildId()).stop();
             }
         });
 
