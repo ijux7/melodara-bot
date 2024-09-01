@@ -6,12 +6,14 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import pro.melodara.Melodara;
 import pro.melodara.utils.StringFormat;
 import pro.melodara.utils.music.MusicManager;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -43,13 +45,13 @@ public class MessagePlayer {
         embed.setTitle(StringFormat.limitString(50, track.getInfo().getTitle()));
         embed.setUrl(track.getInfo().getUri());
         embed.setThumbnail(track.getInfo().getArtworkUrl());
-
         embed.addField(new MessageEmbed.Field(
                 "Duration",
-                 StringFormat.getDuration(playerMetaData.getPosition()) +
-                         " " + getProgressBar(
-                         isNew ? 0L : playerMetaData.getPosition(), track.getInfo().getLength()
-                 ) + " " + StringFormat.getDuration(track.getInfo().getLength()),
+                getProgressBar(
+                        isNew ? 0L : playerMetaData.getPosition(), track.getInfo().getLength()
+                ) + "\n" +
+                        StringFormat.getDuration(playerMetaData.getPosition()) + " — " +
+                        StringFormat.getDuration(track.getInfo().getLength()),
                 false
         ));
 
@@ -73,6 +75,21 @@ public class MessagePlayer {
         return embed.build();
     }
 
+    private Collection<ActionRow> getActionRows() {
+        return List.of(
+                ActionRow.of(
+                        Button.primary("prev", Emoji.fromUnicode("⏮")),
+                        Button.primary("pause", Emoji.fromUnicode("⏸")),
+                        Button.primary("next", Emoji.fromUnicode("⏭"))
+                ),
+                ActionRow.of(
+                        Button.primary("3", Emoji.fromUnicode("⏮")),
+                        Button.primary("2", Emoji.fromUnicode("⏸")),
+                        Button.primary("4", Emoji.fromUnicode("⏭"))
+                )
+        );
+    }
+
     private String getProgressBar(long pos, long max) {
         StringBuilder builder = new StringBuilder();
 
@@ -89,17 +106,15 @@ public class MessagePlayer {
         return builder.toString();
     }
 
-    public void send() {
+    public void send(boolean isNew) {
         if (lastPlayCommandText == null)
             return;
 
         if (message != null)
             message.delete().queue(s -> {}, f -> {});
 
-        lastPlayCommandText.sendMessageEmbeds(getEmbed(true))
-                .setActionRow(
-                        Button.primary("next", Emoji.fromUnicode("⏭"))
-                )
+        lastPlayCommandText.sendMessageEmbeds(getEmbed(isNew))
+                .setComponents(getActionRows())
                 .queue(s -> {
                     setMessage(s);
                     startUpdatingTask();
@@ -117,15 +132,13 @@ public class MessagePlayer {
             return;
 
         message.editMessageEmbeds(getEmbed(false))
-                .setActionRow(
-                        Button.primary("next", Emoji.fromUnicode("⏭"))
-                )
+                .setComponents(getActionRows())
                 .queue(s -> {
                     setMessage(s);
                     lastTimeMessageUpdated = now;
                 }, f -> {
                     setMessage(null);
-                    send();
+                    send(false);
                 });
     }
 
@@ -140,19 +153,19 @@ public class MessagePlayer {
         );
     }
 
+    public void stopUpdatingPlayerMessage() {
+        if (this.future != null && !this.future.isCancelled()) {
+            this.future.cancel(true);
+            this.future = null;
+        }
+    }
+
     private void setMessage(Message message) {
         this.message = message;
     }
 
     public void setLastPlayCommandText(MessageChannelUnion channel) {
         this.lastPlayCommandText = channel;
-    }
-
-    public void stopUpdatingPlayerMessage() {
-        if (this.future != null && !this.future.isCancelled()) {
-            this.future.cancel(true);
-            this.future = null;
-        }
     }
 
     public void finish() {

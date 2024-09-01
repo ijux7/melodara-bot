@@ -39,7 +39,7 @@ public class MusicQueue {
 
     public void onTrackStart(Track track) {
         setCurrentTrack(track);
-        mg.getMessagePlayer().send();
+        mg.getMessagePlayer().send(true);
     }
 
     public void onTrackEnd(Track lastTrack, Message.EmittedEvent.TrackEndEvent.AudioTrackEndReason endReason) {
