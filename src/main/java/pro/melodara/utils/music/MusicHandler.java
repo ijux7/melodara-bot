@@ -40,9 +40,9 @@ public class MusicHandler extends AbstractAudioLoadResultHandler {
                 ":notes: Adding **" + playlist.getTracks().size() + "tracks** to queue..."
                 )
                 .queue(s -> {
-                    mg.setLastRequestMessage(s);
+                    mg.getMessagePlayer().setLastPlayCommandText(s.getChannel());
                     mg.getQueueManager().enqueuePlaylist(playlist.getTracks());
-                }, f -> {});;
+                }, f -> {});
     }
 
     @Override
@@ -61,7 +61,7 @@ public class MusicHandler extends AbstractAudioLoadResultHandler {
 
         event.getHook().editOriginal(":notes: Adding **" + track.getInfo().getTitle() + "** to queue...")
                 .queue(s -> {
-                    mg.setLastRequestMessage(s);
+                    mg.getMessagePlayer().setLastPlayCommandText(s.getChannel());
                     mg.getQueueManager().enqueue(track);
                 }, f -> {});
     }

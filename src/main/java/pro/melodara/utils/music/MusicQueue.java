@@ -2,7 +2,6 @@ package pro.melodara.utils.music;
 
 import dev.arbjerg.lavalink.client.player.Track;
 import dev.arbjerg.lavalink.protocol.v4.Message;
-import net.dv8tion.jda.api.EmbedBuilder;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -11,6 +10,7 @@ import java.util.Queue;
 public class MusicQueue {
     private final MusicManager mg;
     private final Queue<Track> queue = new LinkedList<>();
+    private Track currentTrack = null;
 
     public MusicQueue(MusicManager guildMusicManager) {
         mg = guildMusicManager;
@@ -38,26 +38,21 @@ public class MusicQueue {
     }
 
     public void onTrackStart(Track track) {
-        net.dv8tion.jda.api.entities.Message message = mg.getMessage();
-
-        if (message != null) message.delete().queue(s -> {}, f -> {});
-
-        mg.getLastRequestMessage().getChannel().sendMessageEmbeds(
-                new EmbedBuilder()
-                        .setTitle(track.getInfo().getTitle())
-                        .setUrl(track.getInfo().getUri())
-                        .setDescription("Now playing music from " + track.getInfo().getSourceName() + "!")
-                        .setThumbnail(track.getInfo().getArtworkUrl())
-                        .build()
-        ).queue(mg::setMessage, f -> mg.setMessage(null));
+        setCurrentTrack(track);
+        mg.getMessagePlayer().send();
     }
 
     public void onTrackEnd(Track lastTrack, Message.EmittedEvent.TrackEndEvent.AudioTrackEndReason endReason) {
+        mg.getMessagePlayer().stopUpdatingPlayerMessage();
+
         if (endReason.getMayStartNext()) {
             Track nextTrack = queue.poll();
 
             if (nextTrack != null) {
                 startTrack(nextTrack);
+            } else {
+                mg.getMessagePlayer().finish();
+                mg.stop();
             }
         }
     }
@@ -73,5 +68,13 @@ public class MusicQueue {
                         .setVolume(75)
                         .subscribe()
         );
+    }
+
+    public Track getCurrentTrack() {
+        return currentTrack;
+    }
+
+    public void setCurrentTrack(Track currentTrack) {
+        this.currentTrack = currentTrack;
     }
 }
