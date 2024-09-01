@@ -17,6 +17,7 @@ import pro.melodara.utils.commands.CommandHandler;
 import pro.melodara.utils.commands.CommandManager;
 import pro.melodara.utils.Configuration;
 import pro.melodara.utils.music.LavalinkManager;
+import pro.melodara.utils.music.player.PlayerListener;
 
 import java.time.Instant;
 
@@ -101,7 +102,8 @@ public class Melodara {
                 .setStatus(OnlineStatus.IDLE)
                 .addEventListeners(
                         new Listener(),
-                        new CommandHandler()
+                        new CommandHandler(),
+                        new PlayerListener()
                 )
                 .setShardsTotal(1)
                 .setShards(0);

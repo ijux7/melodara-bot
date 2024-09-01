@@ -54,6 +54,11 @@ public class Play extends CommandSample {
 
         if (!guild.getSelfMember().hasPermission(channel, Permission.VOICE_CONNECT))
             throw new IllegalArgumentException("3");
+        else if (
+                channel.getMembers().size() == channel.asVoiceChannel().getUserLimit() &&
+                        !guild.getSelfMember().hasPermission(channel, Permission.VOICE_MOVE_OTHERS)
+        )
+            throw new IllegalArgumentException("4");
 
         AudioManager manager = guild.getAudioManager();
 
