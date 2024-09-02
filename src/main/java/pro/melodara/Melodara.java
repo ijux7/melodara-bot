@@ -58,13 +58,13 @@ public class Melodara {
         VERSION = Configuration.get("melodara.main.version");
 
         // welcome message
-        LOGGER.info(" ");
+        LOGGER.info("  ");
         LOGGER.info(
                 "Welcome to '{}' version '{}'! Initializing '{}.class' right now ...",
                 PROJECT_NAME, VERSION, Melodara.class.getSimpleName()
         );
         LOGGER.info("JDA version: JDA-{}", JDAInfo.VERSION);
-        LOGGER.info(" ");
+        LOGGER.info("  ");
 
         // initializing class
         new Melodara();
