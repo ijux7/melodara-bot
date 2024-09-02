@@ -38,7 +38,7 @@ public class MusicMessage {
                 Melodara.PROJECT_NAME + " version " + Melodara.VERSION
         );
 
-        Optional<LavalinkPlayer> playerOptional = musicManager.getPlayer();
+        Optional<LavalinkPlayer> playerOptional = musicManager.getPlayerFromLink();
 
         if (currentTrack == null || playerOptional.isEmpty()) {
             embed.setDescription(":x: Currently no tracks are currently playing.");
