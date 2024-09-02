@@ -83,16 +83,16 @@ public class LavalinkManager {
 
                 guild.getAudioManager().openAudioConnection(connectedChannel);
             } else if (event.getCode() == DISCONNECTED) {
-                // TODO: stop player
+                getMusicManager(event.getGuildId()).stop();
             }
         });
 
         // IMPORTANT: tracks
         client.on(TrackStartEvent.class).subscribe((event) -> {
-            // call start track event
+//            getMusicManager(event.getGuildId()).getScheduler().startTrack(event.getTrack());
         });
         client.on(TrackEndEvent.class).subscribe((event) -> {
-            // call end track event
+            getMusicManager(event.getGuildId()).getScheduler().onTrackEnd(event.getTrack(), event.getEndReason());
         });
 
         // random events
@@ -113,13 +113,14 @@ public class LavalinkManager {
     }
 
     public MusicManager getMusicManager(long guildId) {
-        synchronized(this) {
-            MusicManager musicManager = musicManagers.get(guildId);
+        MusicManager musicManager = musicManagers.get(guildId);
 
-            if (musicManager == null)
-                musicManager = this.musicManagers.put(guildId, new MusicManager(guildId, this));
+        if (musicManager == null) {
+            musicManager = new MusicManager(guildId, this);
 
-            return musicManager;
+            musicManagers.put(guildId, musicManager);
         }
+
+        return musicManager;
     }
 }
