@@ -3,12 +3,18 @@ package pro.melodara.music.messages;
 import dev.arbjerg.lavalink.client.player.LavalinkPlayer;
 import dev.arbjerg.lavalink.client.player.Track;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import pro.melodara.Melodara;
 import pro.melodara.music.MusicManager;
 import pro.melodara.utils.StringFormat;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 
@@ -16,6 +22,7 @@ import java.util.Queue;
 public class MusicMessage {
     private final MusicManager musicManager;
     private MessageChannelUnion messageChannel = null;
+    private Message currentPlayerMessage = null;
 
     public MusicMessage(MusicManager musicManager) {
         this.musicManager = musicManager;
@@ -78,13 +85,62 @@ public class MusicMessage {
         return embed.build();
     }
 
-    public void sendMessage() {
+    private Collection<ActionRow> getActionRows() {
+        Optional<LavalinkPlayer> playerOptional = musicManager.getPlayer();
+        if (playerOptional.isEmpty()) return List.of();
+
+        LavalinkPlayer player = playerOptional.get();
+
+        return List.of(
+            ActionRow.of(
+                    Button.secondary(
+                            "previous",
+                            Emoji.fromFormatted("<:arrowleft:1279770369947074560>")
+                    ),
+                    Button.secondary(
+                            "pause",
+                            player.getPaused() ?
+                                    Emoji.fromFormatted("<:play:1279771723104915537>") :
+                                    Emoji.fromFormatted("<:pause:1279770388557074494>")
+                    ),
+                    Button.secondary(
+                            "next",
+                            Emoji.fromFormatted("<:arrowright:1279770380462194698>")
+                    )
+            )
+        );
+    }
+
+    public void sendMessageWhenStarts() {
         if (messageChannel == null) return;
 
-        messageChannel.sendMessageEmbeds(getEmbed()).queue(s -> {}, f -> {});
+        if (currentPlayerMessage != null)
+            currentPlayerMessage.delete().queue(s -> {}, f -> {});
+
+        messageChannel.sendMessageEmbeds(getEmbed()).setComponents(getActionRows())
+                .queue(s -> currentPlayerMessage = s, f -> {});
+    }
+
+    public void sendMessage(MessageChannelUnion channel) {
+        if (currentPlayerMessage != null)
+            currentPlayerMessage.delete().queue(s -> {}, f -> {});
+
+        channel.sendMessageEmbeds(getEmbed()).setComponents(getActionRows())
+                .queue(s -> currentPlayerMessage = s, f -> {});
     }
 
     public void setChannelUnion(MessageChannelUnion messageChannel) {
         this.messageChannel = messageChannel;
+    }
+
+    public void delete() {
+        if (currentPlayerMessage != null) currentPlayerMessage.delete().queue(s -> {}, f -> {});
+
+        currentPlayerMessage = null;
+        messageChannel = null;
+    }
+
+    public MessageChannelUnion getChannel() {
+        return messageChannel;
     }
 }

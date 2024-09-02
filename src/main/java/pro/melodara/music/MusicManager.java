@@ -20,14 +20,9 @@ public class MusicManager {
     }
 
     public void stop() {
-        this.scheduler.getQueue().clear();
-
-        getPlayer().ifPresent(
-                (player) -> player.setPaused(false)
-                        .setTrack(null)
-                        .subscribe()
-        );
-        getLink().ifPresent(link -> link.destroy().subscribe());
+        scheduler.clear();
+        getPlayer().ifPresent((player) -> player.setPaused(false).setTrack(null).subscribe());
+        musicMessage.delete();
     }
 
     public Optional<Link> getLink() {

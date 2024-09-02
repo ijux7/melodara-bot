@@ -46,12 +46,15 @@ public class MusicScheduler {
             if (nextTrack != null) {
                 this.startTrack(nextTrack);
             }
+
+            this.previousTrack = this.currentTrack;
         }
     }
 
     public void onTrackStart(Track track) {
-        previousTrack = currentTrack;
-        currentTrack = track;
+        this.currentTrack = track;
+
+        musicManager.getMusicMessage().sendMessageWhenStarts();
     }
 
     public void startTrack(Track track) {
@@ -59,13 +62,14 @@ public class MusicScheduler {
                 link -> link.createOrUpdatePlayer()
                         .setTrack(track)
                         .setVolume(75)
-                        .subscribe(
-                                l -> musicManager.getMusicMessage().sendMessage(),
-                                f -> {
-                                    // todo: message
-                                }
-                        )
+                        .subscribe()
         );
+    }
+
+    public void clear() {
+        trackQueue.clear();
+        currentTrack = null;
+        previousTrack = null;
     }
 
     public Queue<Track> getQueue() {

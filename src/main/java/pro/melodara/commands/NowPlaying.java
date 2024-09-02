@@ -22,7 +22,7 @@ public class NowPlaying extends CommandSample {
         MusicManager musicManager = melodara.getLavalinkManager()
                 .getMusicManager(Objects.requireNonNull(event.getGuild()).getIdLong());
 
-        musicManager.getMusicMessage().sendMessage();
+        musicManager.getMusicMessage().sendMessage(event.getChannel());
 
         event.getHook().deleteOriginal().queue(s -> {}, f -> {});
     }
