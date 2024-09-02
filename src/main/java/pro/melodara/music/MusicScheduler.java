@@ -24,7 +24,7 @@ public class MusicScheduler {
                     if (player.getTrack() == null) startTrack(track);
                     else this.trackQueue.offer(track);
                 },
-                () -> startTrack(this.trackQueue.poll())
+                () -> startTrack(track)
         );
     }
 
