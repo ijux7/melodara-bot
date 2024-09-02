@@ -118,6 +118,25 @@ public class MusicMessage {
             )
         );
     }
+   // Done in 1 hour, don't hit me
+   public void handleButtons(ButtonInteraction interaction) {
+        String buttonId = interaction.getComponent().getId();
+        switch (Objects.requireNonNull(buttonId)) {
+            case "previous" -> {
+                Track curr = this.musicManager.getScheduler().getCurrentTrack();
+                Track prev = this.musicManager.getScheduler().getPreviousTrack();
+                this.musicManager.getScheduler().insertAs(0, curr);
+                this.musicManager.getScheduler().startTrack(prev);
+            }
+            case "plus15s" -> this.musicManager.getPlayerFromLink().ifPresent(
+                    player -> player.setPosition(player.getPosition()+15000L).subscribe());
+            case "minus15s" -> this.musicManager.getPlayerFromLink().ifPresent(player ->
+                    player.setPosition(player.getPosition()-15000L).subscribe());
+            case "pause" -> this.musicManager.getPlayerFromLink().ifPresent(player ->
+                    player.setPaused(!player.getPaused()).subscribe());
+            case "next" -> this.musicManager.getScheduler().skipTrack();
+        }
+    }
 
     public void sendMessageWhenStarts() {
         if (messageChannel == null) return;
