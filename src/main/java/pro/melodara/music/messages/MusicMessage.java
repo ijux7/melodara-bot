@@ -75,7 +75,7 @@ public class MusicMessage {
                 "- Next: " + (nextTrack == null ? "No next track" :
                         "[" + StringFormat.limitString(50, nextTrack.getInfo().getTitle()) + "](" +
                                 nextTrack.getInfo().getUri() + ")") +
-                        (tracks.size() > 1 ? " (then " + tracks.size() + " tracks)" : "") + "\n" +
+                        (tracks.size() > 1 ? " (then " + (tracks.size() - 1) + " tracks)" : "") + "\n" +
                         "- Previous: " + (previousTrack == null ? "No previous track" :
                         "[" + StringFormat.limitString(50, previousTrack.getInfo().getTitle()) + "](" +
                                 previousTrack.getInfo().getUri() + ")"),
@@ -98,10 +98,18 @@ public class MusicMessage {
                             Emoji.fromFormatted("<:arrowleft:1279770369947074560>")
                     ),
                     Button.secondary(
+                            "minus15s",
+                            Emoji.fromFormatted("<:minus15s:1279773771783475220>")
+                    ),
+                    Button.secondary(
                             "pause",
                             player.getPaused() ?
                                     Emoji.fromFormatted("<:play:1279771723104915537>") :
                                     Emoji.fromFormatted("<:pause:1279770388557074494>")
+                    ),
+                    Button.secondary(
+                            "plus15s",
+                            Emoji.fromFormatted("<:plus15s:1279774025320497325>")
                     ),
                     Button.secondary(
                             "next",
@@ -118,6 +126,13 @@ public class MusicMessage {
             currentPlayerMessage.delete().queue(s -> {}, f -> {});
 
         messageChannel.sendMessageEmbeds(getEmbed()).setComponents(getActionRows())
+                .queue(s -> currentPlayerMessage = s, f -> {});
+    }
+
+    public void updateMessage() {
+        if (currentPlayerMessage == null) return;
+
+        currentPlayerMessage.editMessageEmbeds(getEmbed()).setComponents(getActionRows())
                 .queue(s -> currentPlayerMessage = s, f -> {});
     }
 
