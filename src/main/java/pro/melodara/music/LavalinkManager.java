@@ -116,7 +116,7 @@ public class LavalinkManager {
             MusicManager musicManager = musicManagers.get(guildId);
 
             if (musicManager == null) {
-                musicManager = new MusicManager(guildId, this);
+                musicManager = new MusicManager(guildId, this, melodara);
 
                 musicManagers.put(guildId, musicManager);
             }
