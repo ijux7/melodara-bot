@@ -23,6 +23,9 @@ public class MusicScheduler {
                 player -> {
                     if (player.getTrack() == null) startTrack(track);
                     else this.trackQueue.offer(track);
+
+                    if (!this.trackQueue.isEmpty())
+                        musicManager.getMusicMessage().updateMessage();
                 },
                 () -> startTrack(track)
         );
@@ -34,6 +37,9 @@ public class MusicScheduler {
         this.musicManager.getPlayer().ifPresentOrElse(
                 (player) -> {
                     if (player.getTrack() == null) this.startTrack(this.trackQueue.poll());
+
+                    if (!this.trackQueue.isEmpty())
+                        musicManager.getMusicMessage().updateMessage();
                 },
                 () -> this.startTrack(this.trackQueue.poll())
         );
@@ -45,6 +51,9 @@ public class MusicScheduler {
 
             if (nextTrack != null) {
                 this.startTrack(nextTrack);
+            } else {
+                musicManager.stop();
+                return;
             }
 
             this.previousTrack = this.currentTrack;
