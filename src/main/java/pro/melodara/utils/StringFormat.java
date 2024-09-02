@@ -16,9 +16,9 @@ public class StringFormat {
         long minutes = d.toMinutes() % 60;
         long seconds = d.getSeconds() % 60;
 
-        return (hours == 0 ? "" : (hours + " hrs ")) +
-                (minutes == 0 ? "" : (minutes + " mins ")) +
-                seconds + " secs";
+        return (hours == 0 ? "" : (hours + " hours ")) +
+                (minutes == 0 ? "" : (minutes + " minutes ")) +
+                seconds + " seconds";
     }
 
     public static String getDuration(long duration) {
