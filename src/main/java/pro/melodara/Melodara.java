@@ -38,7 +38,7 @@ public class Melodara {
         // command manager
         this.commandManager = CommandManager.create()
                 .addCommands(
-                        new Play()
+                        new Play(this)
                 );
 
         // lavalink manager
