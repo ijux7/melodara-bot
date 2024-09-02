@@ -42,7 +42,6 @@ public class Play extends CommandSample {
         MusicManager musicManager = melodara.getLavalinkManager().getMusicManager(guildId);
 
         String track = trackRaw.toLowerCase().startsWith("https://") ? trackRaw : "ytsearch:" + trackRaw;
-
         link.loadItem(track).subscribe(new TrackLoaderListener(event, musicManager));
     }
 
