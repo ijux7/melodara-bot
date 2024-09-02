@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pro.melodara.commands.NowPlaying;
 import pro.melodara.commands.Play;
 import pro.melodara.music.LavalinkManager;
 import pro.melodara.utils.commands.CommandHandler;
@@ -38,7 +39,8 @@ public class Melodara {
         // command manager
         this.commandManager = CommandManager.create()
                 .addCommands(
-                        new Play(this)
+                        new Play(this),
+                        new NowPlaying(this)
                 );
 
         // lavalink manager

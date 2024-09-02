@@ -2,6 +2,7 @@ package pro.melodara.music;
 
 import dev.arbjerg.lavalink.client.Link;
 import dev.arbjerg.lavalink.client.player.LavalinkPlayer;
+import pro.melodara.music.messages.MusicMessage;
 
 import java.util.Optional;
 
@@ -9,11 +10,13 @@ public class MusicManager {
     private final LavalinkManager lavalinkManager;
     private final long guildId;
     private final MusicScheduler scheduler;
+    private final MusicMessage musicMessage;
 
     public MusicManager(long guildId, LavalinkManager lavalinkManager) {
         this.lavalinkManager = lavalinkManager;
         this.guildId = guildId;
         this.scheduler = new MusicScheduler(this);
+        this.musicMessage = new MusicMessage(this);
     }
 
     public void stop() {
@@ -31,11 +34,15 @@ public class MusicManager {
         return Optional.ofNullable(this.lavalinkManager.getClient().getLinkIfCached(this.guildId));
     }
 
+    public Optional<LavalinkPlayer> getPlayer() {
+        return getLink().map(Link::getCachedPlayer);
+    }
+
     public MusicScheduler getScheduler() {
         return scheduler;
     }
 
-    public Optional<LavalinkPlayer> getPlayer() {
-        return getLink().map(Link::getCachedPlayer);
+    public MusicMessage getMusicMessage() {
+        return musicMessage;
     }
 }

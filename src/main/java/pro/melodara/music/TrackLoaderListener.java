@@ -16,6 +16,7 @@ public class TrackLoaderListener extends AbstractAudioLoadResultHandler {
     public TrackLoaderListener(SlashCommandInteractionEvent event, MusicManager musicManager) {
         this.event = event;
         this.musicManager = musicManager;
+        musicManager.getMusicMessage().setChannelUnion(event.getChannel());
     }
 
     @Override
