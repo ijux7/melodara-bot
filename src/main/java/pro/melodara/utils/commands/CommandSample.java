@@ -8,10 +8,9 @@ import pro.melodara.exceptions.CommandExecutionException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class CommandSample implements CommandSampleImpl {
-    private static final Logger log = LoggerFactory.getLogger(CommandHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger("melodara/commands");
     public String name;
     public String description;
     public final List<CommandSample> children = new ArrayList<>();
@@ -20,17 +19,21 @@ public class CommandSample implements CommandSampleImpl {
 
     @Override
     public void run(SlashCommandInteractionEvent event) {
-        event.reply("hi").queue();
+        event.reply("hi").queue(s -> {}, f -> {});
     }
 
     public void execute(SlashCommandInteractionEvent event) {
-        String guildId = Objects.requireNonNull(event.getGuild()).getId();
         try {
             run(event);
-        }catch (CommandExecutionException exception) {
+        } catch (CommandExecutionException exception) {
             event.getHook().editOriginal(":x: " + exception.getErrorCode()).queue();
-        }catch (Exception e) {
-            log.error("Non Based Exception! Guild ID: " + guildId, e);
+        } catch (Exception e) {
+            LOGGER.error(
+                    "Non Based Exception, command: {}, guildId {}",
+                    event.getFullCommandName(),
+                    event.getGuild() == null ? "N/A" : event.getGuild().getIdLong(),
+                    e
+            );
         }
     }
 }
