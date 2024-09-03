@@ -32,4 +32,15 @@ public class BotListener extends ListenerAdapter {
 
         melodara.getCommandManager().updateCommandsGlobally(event.getJDA());
     }
+
+    @Override
+    public void onButtonInteraction(ButtonInteractionEvent event) {
+        MusicManager manager;
+        if ((manager = melodara.getLavalinkManager().getMusicManager(
+                Objects.requireNonNull(event.getGuild()).getIdLong(),
+                false)) != null
+        ) {
+            manager.getMusicMessage().handleButtons(event);
+        }
+    }
 }

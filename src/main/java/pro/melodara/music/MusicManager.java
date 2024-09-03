@@ -45,6 +45,13 @@ public class MusicManager {
         return getLink().map(Link::getCachedPlayer);
     }
 
+   public Optional<LavalinkPlayer> getPlayerFromLink() {
+        if (getLink().isPresent()) {
+            return Optional.ofNullable(getLink().get().getPlayer().block());
+        }
+        return Optional.empty();
+    }
+    
     public MusicScheduler getScheduler() {
         return scheduler;
     }

@@ -111,17 +111,23 @@ public class LavalinkManager {
         return client;
     }
 
-    public MusicManager getMusicManager(long guildId) {
+    public MusicManager getMusicManager(long guildId, boolean create) {
         synchronized (this) {
             MusicManager musicManager = musicManagers.get(guildId);
 
-            if (musicManager == null) {
-                musicManager = new MusicManager(guildId, this, melodara);
+            if(create) {
+                if (musicManager == null) {
+                    musicManager = new MusicManager(guildId, this, melodara);
 
-                musicManagers.put(guildId, musicManager);
+                    musicManagers.put(guildId, musicManager);
+                }
             }
 
             return musicManager;
         }
+    }
+
+    public MusicManager getMusicManager(long guildId) {
+        return getMusicManager(guildId, true);
     }
 }
