@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import pro.melodara.Melodara;
+import pro.melodara.exceptions.CommandExecutionException;
 import pro.melodara.music.MusicManager;
 import pro.melodara.utils.StringFormat;
 
@@ -141,7 +142,7 @@ public class MusicMessage {
 
     private void checkIfNoPlayer(boolean isPlayer) {
         if (!isPlayer)
-            throw new NullPointerException("Nothing is playing now."); // todo: normal exceptions
+            throw new CommandExecutionException("Nothing is playing now.");
     }
 
     private void pauseTrack(ButtonInteraction interaction) {
@@ -164,7 +165,7 @@ public class MusicMessage {
 
     private void checkIsSeekable(LavalinkPlayer player, ButtonInteraction interaction) {
         if (!Objects.requireNonNull(player.getTrack()).getInfo().isSeekable())
-            throw new IllegalAccessError("You cannot seek the track!");  // todo: normal exceptions
+            throw new CommandExecutionException("You cannot seek the track!");
     }
 
     private void seekPlus15s(ButtonInteraction interaction, LavalinkPlayer player) {
