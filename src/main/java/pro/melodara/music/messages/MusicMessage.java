@@ -123,34 +123,64 @@ public class MusicMessage {
             return;
 
         interaction.deferReply(true).queue(s -> {}, f -> {});
+
+        Optional<LavalinkPlayer> playerOptional = musicManager.getPlayerFromLink();
+
+        checkIfNoPlayer(playerOptional.isPresent());
+
         String buttonId = interaction.getComponent().getId();
 
         switch (Objects.requireNonNull(buttonId)) {
-            case "previous" ->
-                    this.musicManager.getScheduler().playPreviousTrack();
-            case "plus15s" ->
-                    this.musicManager.getPlayerFromLink().ifPresent(
-                    player ->
-                            player.setPosition(player.getPosition()+ 15000L).subscribe());
-            case "minus15s" ->
-                    this.musicManager.getPlayerFromLink()
-                            .ifPresent(player ->
-                                    player.setPosition(player.getPosition() - 15000L).subscribe()
-                            );
-            case "pause" ->
-                    this.musicManager.getPlayerFromLink()
-                            .ifPresent(player ->
-                                    player.setPaused(!player.getPaused()).subscribe()
-                            );
-            case "next" ->
-                    this.musicManager.getScheduler().skipTrack();
+            case "previous" -> playPreviousTrack(interaction);
+            case "plus15s" -> seekPlus15s(interaction, playerOptional.get());
+            case "minus15s" -> seekMinus15s(interaction, playerOptional.get());
+            case "pause" -> pauseTrack(interaction);
+            case "next" -> playNextTrack(interaction);
         }
+    }
+
+    private void checkIfNoPlayer(boolean isPlayer) {
+        if (!isPlayer)
+            throw new NullPointerException("Nothing is playing now."); // todo: normal exceptions
     }
 
     private void pauseTrack(ButtonInteraction interaction) {
         this.musicManager.getPlayerFromLink().ifPresent(player -> player.setPaused(!player.getPaused()).subscribe());
 
         interaction.getHook().editOriginal("PAUSED").queue(s -> {}, f -> {});
+    }
+
+    private void playNextTrack(ButtonInteraction interaction) {
+        this.musicManager.getScheduler().skipTrack();
+
+        interaction.getHook().editOriginal("Skipped").queue(s -> {}, f -> {});
+    }
+
+    private void playPreviousTrack(ButtonInteraction interaction) {
+        this.musicManager.getScheduler().playPreviousTrack();
+
+        interaction.getHook().editOriginal("Skipped back?").queue(s -> {}, f -> {});
+    }
+
+    private void checkIsSeekable(LavalinkPlayer player, ButtonInteraction interaction) {
+        if (!Objects.requireNonNull(player.getTrack()).getInfo().isSeekable())
+            throw new IllegalAccessError("You cannot seek the track!");  // todo: normal exceptions
+    }
+
+    private void seekPlus15s(ButtonInteraction interaction, LavalinkPlayer player) {
+        checkIsSeekable(player, interaction);
+
+        player.setPosition(player.getPosition() + 15000L).subscribe();
+
+        interaction.getHook().editOriginal("Seeked +15 s").queue(s -> {}, f -> {});
+    }
+
+    private void seekMinus15s(ButtonInteraction interaction, LavalinkPlayer player) {
+        checkIsSeekable(player, interaction);
+
+        player.setPosition(player.getPosition() - 15000L).subscribe();
+
+        interaction.getHook().editOriginal("Seeked -15 s").queue(s -> {}, f -> {});
     }
 
     public void sendMessageWhenStarts() {
