@@ -9,14 +9,13 @@ import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonInteraction;
+import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import pro.melodara.Melodara;
 import pro.melodara.music.MusicManager;
 import pro.melodara.utils.StringFormat;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Queue;
+import java.util.*;
 
 
 public class MusicMessage {
@@ -118,24 +117,40 @@ public class MusicMessage {
             )
         );
     }
-   // Done in 1 hour, don't hit me
-   public void handleButtons(ButtonInteraction interaction) {
+    // Done in 1 hour, don't hit me
+    public void handleButtons(ButtonInteraction interaction) {
+        if (!interaction.getMessage().getId().equals(currentPlayerMessage.getId()))
+            return;
+
+        interaction.deferReply(true).queue(s -> {}, f -> {});
         String buttonId = interaction.getComponent().getId();
+
         switch (Objects.requireNonNull(buttonId)) {
-            case "previous" -> {
-                Track curr = this.musicManager.getScheduler().getCurrentTrack();
-                Track prev = this.musicManager.getScheduler().getPreviousTrack();
-                this.musicManager.getScheduler().insertAs(0, curr);
-                this.musicManager.getScheduler().startTrack(prev);
-            }
-            case "plus15s" -> this.musicManager.getPlayerFromLink().ifPresent(
-                    player -> player.setPosition(player.getPosition()+15000L).subscribe());
-            case "minus15s" -> this.musicManager.getPlayerFromLink().ifPresent(player ->
-                    player.setPosition(player.getPosition()-15000L).subscribe());
-            case "pause" -> this.musicManager.getPlayerFromLink().ifPresent(player ->
-                    player.setPaused(!player.getPaused()).subscribe());
-            case "next" -> this.musicManager.getScheduler().skipTrack();
+            case "previous" ->
+                    this.musicManager.getScheduler().playPreviousTrack();
+            case "plus15s" ->
+                    this.musicManager.getPlayerFromLink().ifPresent(
+                    player ->
+                            player.setPosition(player.getPosition()+ 15000L).subscribe());
+            case "minus15s" ->
+                    this.musicManager.getPlayerFromLink()
+                            .ifPresent(player ->
+                                    player.setPosition(player.getPosition() - 15000L).subscribe()
+                            );
+            case "pause" ->
+                    this.musicManager.getPlayerFromLink()
+                            .ifPresent(player ->
+                                    player.setPaused(!player.getPaused()).subscribe()
+                            );
+            case "next" ->
+                    this.musicManager.getScheduler().skipTrack();
         }
+    }
+
+    private void pauseTrack(ButtonInteraction interaction) {
+        this.musicManager.getPlayerFromLink().ifPresent(player -> player.setPaused(!player.getPaused()).subscribe());
+
+        interaction.getHook().editOriginal("PAUSED").queue(s -> {}, f -> {});
     }
 
     public void sendMessageWhenStarts() {
@@ -144,7 +159,10 @@ public class MusicMessage {
         if (currentPlayerMessage != null)
             currentPlayerMessage.delete().queue(s -> {}, f -> {});
 
-        messageChannel.sendMessageEmbeds(getEmbed()).setComponents(getActionRows())
+        MessageChannelUnion channel = currentPlayerMessage == null ?
+                messageChannel : currentPlayerMessage.getChannel();
+
+        channel.sendMessageEmbeds(getEmbed()).setComponents(getActionRows())
                 .queue(s -> currentPlayerMessage = s, f -> {});
     }
 
@@ -159,8 +177,13 @@ public class MusicMessage {
         if (currentPlayerMessage != null)
             currentPlayerMessage.delete().queue(s -> {}, f -> {});
 
-        channel.sendMessageEmbeds(getEmbed()).setComponents(getActionRows())
-                .queue(s -> currentPlayerMessage = s, f -> {});
+        MessageCreateAction createAction = channel.sendMessageEmbeds(getEmbed());
+
+        if (musicManager.getScheduler().getCurrentTrack() != null) {
+            createAction.setComponents();
+        }
+
+        createAction.queue(s -> currentPlayerMessage = s, f -> {});
     }
 
     public void setChannelUnion(MessageChannelUnion messageChannel) {

@@ -4,6 +4,7 @@ import dev.arbjerg.lavalink.client.player.Track;
 import dev.arbjerg.lavalink.protocol.v4.Message;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -59,6 +60,12 @@ public class MusicScheduler {
             this.previousTrack = this.currentTrack;
         }
     }
+
+    public void onTrackStart(Track track) {
+        currentTrack = track;
+
+        musicManager.getMusicMessage().sendMessageWhenStarts();
+    }
     
     public void insertAs(int index, Track track) {
         List<Track> TEMP = new LinkedList<>(trackQueue);
@@ -66,14 +73,10 @@ public class MusicScheduler {
         trackQueue.clear();
         TEMP.forEach(trackQueue::offer);
     }
-    
-    public void onTrackStart(Track track) {
-        this.currentTrack = track;
-
-        musicManager.getMusicMessage().sendMessageWhenStarts();
-    }
 
     public void startTrack(Track track) {
+        currentTrack = track;
+
         musicManager.getLink().ifPresent(
                 link -> link.createOrUpdatePlayer()
                         .setTrack(track)
@@ -83,13 +86,26 @@ public class MusicScheduler {
     }
     
     public void skipTrack() {
-        Track track;
-        if((track = trackQueue.poll()) != null) {
-            this.previousTrack = currentTrack;
-            startTrack(track);
+        if(trackQueue.isEmpty()) {
+            musicManager.stop();
+        } else {
+            previousTrack = currentTrack;
+            startTrack(trackQueue.poll());
         }
     }
 
+    public void playPreviousTrack() {
+        Track curr = getCurrentTrack();
+        Track prev = getPreviousTrack();
+
+        if (prev == null) return;
+
+        insertAs(0, curr);
+        startTrack(prev);
+
+        this.currentTrack = previousTrack; // force НАСИЛЬНО
+        this.previousTrack = null;
+    }
 
     public void clear() {
         trackQueue.clear();
