@@ -59,7 +59,14 @@ public class MusicScheduler {
             this.previousTrack = this.currentTrack;
         }
     }
-
+    
+    public void insertAs(int index, Track track) {
+        List<Track> TEMP = new LinkedList<>(trackQueue);
+        TEMP.add(index, track);
+        trackQueue.clear();
+        TEMP.forEach(trackQueue::offer);
+    }
+    
     public void onTrackStart(Track track) {
         this.currentTrack = track;
 
@@ -74,6 +81,15 @@ public class MusicScheduler {
                         .subscribe()
         );
     }
+    
+    public void skipTrack() {
+        Track track;
+        if((track = trackQueue.poll()) != null) {
+            this.previousTrack = currentTrack;
+            startTrack(track);
+        }
+    }
+
 
     public void clear() {
         trackQueue.clear();
@@ -83,6 +99,13 @@ public class MusicScheduler {
 
     public Queue<Track> getQueue() {
         return trackQueue;
+    }
+
+    public void shuffleQueue() {
+        List<Track> TEMP = new LinkedList<>(trackQueue);
+        Collections.shuffle(TEMP);
+        trackQueue.clear();
+        TEMP.forEach(trackQueue::offer);
     }
 
     public @Nullable Track getCurrentTrack() {
