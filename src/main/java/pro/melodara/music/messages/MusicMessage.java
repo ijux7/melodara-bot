@@ -86,6 +86,10 @@ public class MusicMessage {
     }
 
     private Collection<ActionRow> getActionRows() {
+        return getActionRows(false);
+    }
+
+    private Collection<ActionRow> getActionRows(boolean starts) {
         Optional<LavalinkPlayer> playerOptional = musicManager.getPlayer();
         if (playerOptional.isEmpty()) return List.of();
 
@@ -103,9 +107,9 @@ public class MusicMessage {
                     ),
                     Button.secondary(
                             "pause",
-                            player.getPaused() ?
-                                    Emoji.fromFormatted("<:play:1279771723104915537>") :
-                                    Emoji.fromFormatted("<:pause:1279770388557074494>")
+                            player.getPaused() || starts ?
+                                    Emoji.fromFormatted("<:pause:1279770388557074494>") :
+                                    Emoji.fromFormatted("<:play:1279771723104915537>")
                     ),
                     Button.secondary(
                             "plus15s",
@@ -118,7 +122,7 @@ public class MusicMessage {
             )
         );
     }
-    // Done in 1 hour, don't hit me - I'll not, you're my prettiest boy <3
+
     public void handleButtons(ButtonInteraction interaction) {
         if (!interaction.getMessage().getId().equals(currentPlayerMessage.getId()))
             return;
@@ -147,41 +151,42 @@ public class MusicMessage {
 
     private void pauseTrack(ButtonInteraction interaction) {
         this.musicManager.getPlayerFromLink().ifPresent(player -> player.setPaused(!player.getPaused()).subscribe());
+        updateMessage();
 
-        interaction.getHook().editOriginal("PAUSED").queue(s -> {}, f -> {});
+        interaction.getHook().deleteOriginal().queue(s -> {}, f -> {});
     }
 
     private void playNextTrack(ButtonInteraction interaction) {
         this.musicManager.getScheduler().skipTrack();
 
-        interaction.getHook().editOriginal("Skipped").queue(s -> {}, f -> {});
+        interaction.getHook().deleteOriginal().queue(s -> {}, f -> {});
     }
 
     private void playPreviousTrack(ButtonInteraction interaction) {
         this.musicManager.getScheduler().playPreviousTrack();
 
-        interaction.getHook().editOriginal("Skipped back?").queue(s -> {}, f -> {});
+        interaction.getHook().deleteOriginal().queue(s -> {}, f -> {});
     }
 
-    private void checkIsSeekable(LavalinkPlayer player, ButtonInteraction interaction) {
+    private void checkIsSeekable(LavalinkPlayer player) {
         if (!Objects.requireNonNull(player.getTrack()).getInfo().isSeekable())
             throw new CommandExecutionException("You cannot seek the track!");
     }
 
     private void seekPlus15s(ButtonInteraction interaction, LavalinkPlayer player) {
-        checkIsSeekable(player, interaction);
+        checkIsSeekable(player);
 
         player.setPosition(player.getPosition() + 15000L).subscribe();
 
-        interaction.getHook().editOriginal("Seeked +15 s").queue(s -> {}, f -> {});
+        interaction.getHook().deleteOriginal().queue(s -> {}, f -> {});
     }
 
     private void seekMinus15s(ButtonInteraction interaction, LavalinkPlayer player) {
-        checkIsSeekable(player, interaction);
+        checkIsSeekable(player);
 
         player.setPosition(player.getPosition() - 15000L).subscribe();
 
-        interaction.getHook().editOriginal("Seeked -15 s").queue(s -> {}, f -> {});
+        interaction.getHook().deleteOriginal().queue(s -> {}, f -> {});
     }
 
     public void sendMessageWhenStarts() {
@@ -193,7 +198,7 @@ public class MusicMessage {
         MessageChannelUnion channel = currentPlayerMessage == null ?
                 messageChannel : currentPlayerMessage.getChannel();
 
-        channel.sendMessageEmbeds(getEmbed()).setComponents(getActionRows())
+        channel.sendMessageEmbeds(getEmbed()).setComponents(getActionRows(true))
                 .queue(s -> currentPlayerMessage = s, f -> {});
     }
 
@@ -211,7 +216,7 @@ public class MusicMessage {
         MessageCreateAction createAction = channel.sendMessageEmbeds(getEmbed());
 
         if (musicManager.getScheduler().getCurrentTrack() != null) {
-            createAction.setComponents();
+            createAction.setComponents(getActionRows());
         }
 
         createAction.queue(s -> currentPlayerMessage = s, f -> {});
@@ -226,9 +231,5 @@ public class MusicMessage {
 
         currentPlayerMessage = null;
         messageChannel = null;
-    }
-
-    public MessageChannelUnion getChannel() {
-        return messageChannel;
     }
 }
