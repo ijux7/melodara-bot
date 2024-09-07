@@ -84,7 +84,7 @@ public class MusicScheduler {
         musicManager.getLink().ifPresent(
                 link -> link.createOrUpdatePlayer()
                         .setTrack(track)
-                        .setVolume(75)
+                        .setVolume(100) // default 100
                         .subscribe()
         );
     }
