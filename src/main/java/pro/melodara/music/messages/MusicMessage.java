@@ -34,15 +34,12 @@ public class MusicMessage {
         Track previousTrack = musicManager.getScheduler().getPreviousTrack();
 
         EmbedBuilder embed = new EmbedBuilder();
-        StringBuilder footerText = new StringBuilder(
-                Melodara.PROJECT_NAME + " version " + Melodara.VERSION
-        );
+        embed.setFooter(Melodara.PROJECT_NAME + " version " + Melodara.VERSION);
 
         Optional<LavalinkPlayer> playerOptional = musicManager.getPlayerFromLink();
 
         if (currentTrack == null || playerOptional.isEmpty()) {
             embed.setDescription(":x: Currently no tracks are currently playing.");
-            embed.setFooter(footerText.toString());
 
             return embed.build();
         }
@@ -86,10 +83,6 @@ public class MusicMessage {
     }
 
     private Collection<ActionRow> getActionRows() {
-        return getActionRows(false);
-    }
-
-    private Collection<ActionRow> getActionRows(boolean starts) {
         Optional<LavalinkPlayer> playerOptional = musicManager.getPlayer();
         if (playerOptional.isEmpty()) return List.of();
 
@@ -100,24 +93,46 @@ public class MusicMessage {
                     Button.secondary(
                             "previous",
                             Emoji.fromFormatted("<:arrowleft:1279770369947074560>")
-                    ),
+                    ).withDisabled(musicManager.getScheduler().getPreviousTrack() == null),
                     Button.secondary(
                             "minus15s",
                             Emoji.fromFormatted("<:minus15s:1279773771783475220>")
-                    ),
+                    ).withDisabled(!Objects.requireNonNull(player.getTrack()).getInfo().isSeekable()),
                     Button.secondary(
                             "pause",
-                            player.getPaused() || starts ?
-                                    Emoji.fromFormatted("<:pause:1279770388557074494>") :
-                                    Emoji.fromFormatted("<:play:1279771723104915537>")
+                            player.getPaused() ?
+                                    Emoji.fromFormatted("<:play:1279771723104915537>") :
+                                    Emoji.fromFormatted("<:pause:1279770388557074494>")
                     ),
                     Button.secondary(
                             "plus15s",
                             Emoji.fromFormatted("<:plus15s:1279774025320497325>")
-                    ),
+                    ).withDisabled(!Objects.requireNonNull(player.getTrack()).getInfo().isSeekable()),
                     Button.secondary(
                             "next",
                             Emoji.fromFormatted("<:arrowright:1279770380462194698>")
+                    ).withDisabled(musicManager.getScheduler().getNextTrack() == null)
+            ),
+            ActionRow.of(
+                    Button.secondary(
+                            "restart",
+                            Emoji.fromFormatted("<:restart:1282098426837733406>")
+                    ).withDisabled(!Objects.requireNonNull(player.getTrack()).getInfo().isSeekable()),
+                    Button.secondary(
+                            "repeat",
+                            Emoji.fromFormatted("<:repeat:1282098439974551714>")
+                    ).withDisabled(!Objects.requireNonNull(player.getTrack()).getInfo().isSeekable()),
+                    Button.secondary(
+                            "stop",
+                            Emoji.fromFormatted("<:stop:1282102051270299729>")
+                    ),
+                    Button.secondary(
+                            "volume-down",
+                            Emoji.fromFormatted("<:voldown:1282101134701629483>")
+                    ),
+                    Button.secondary(
+                            "volume-up",
+                            Emoji.fromFormatted("<:volup:1282101122869497962>")
                     )
             )
         );
@@ -139,8 +154,13 @@ public class MusicMessage {
             case "previous" -> playPreviousTrack(interaction);
             case "plus15s" -> seekPlus15s(interaction, playerOptional.get());
             case "minus15s" -> seekMinus15s(interaction, playerOptional.get());
-            case "pause" -> pauseTrack(interaction);
+            case "pause" -> pauseTrack(interaction, playerOptional.get());
             case "next" -> playNextTrack(interaction);
+            case "restart" -> restartTrack(interaction, playerOptional.get());
+            case "repeat" -> {} // todo: repeat, check RepeatType enum class
+            case "stop" -> stopPlaying(interaction);
+            case "volume-down" -> volumeDown(interaction, playerOptional.get());
+            case "volume-up" -> volumeUp(interaction, playerOptional.get());
         }
     }
 
@@ -149,9 +169,14 @@ public class MusicMessage {
             throw new CommandExecutionException("Nothing is playing now.");
     }
 
-    private void pauseTrack(ButtonInteraction interaction) {
-        this.musicManager.getPlayerFromLink().ifPresent(player -> player.setPaused(!player.getPaused()).subscribe());
-        updateMessage();
+    private void stopPlaying(ButtonInteraction interaction) {
+        this.musicManager.stop();
+
+        interaction.getHook().deleteOriginal().queue(s -> {}, f -> {});
+    }
+
+    private void pauseTrack(ButtonInteraction interaction, LavalinkPlayer player) {
+        player.setPaused(!player.getPaused()).subscribe(s -> updateMessage());
 
         interaction.getHook().deleteOriginal().queue(s -> {}, f -> {});
     }
@@ -170,7 +195,34 @@ public class MusicMessage {
 
     private void checkIsSeekable(LavalinkPlayer player) {
         if (!Objects.requireNonNull(player.getTrack()).getInfo().isSeekable())
-            throw new CommandExecutionException("You cannot seek the track!");
+            throw new CommandExecutionException("You cannot seek the track!"); // todo: handle it
+    }
+
+    private void checkVolume(int volume, boolean up) {
+        if (up && volume + 25 > 150) {
+            throw new CommandExecutionException("Volume must not be higher than 150!");
+        } else if (!up && volume - 25 < 0) {
+            throw new CommandExecutionException("Volume must not be lower than 0!");
+        }
+    }
+
+    private void volumeUp(ButtonInteraction interaction, LavalinkPlayer player) {
+        int volume = player.getVolume();
+
+        checkVolume(volume, true);
+        player.setVolume(volume + 25).subscribe(s -> updateMessage());
+        updateMessage();
+
+        interaction.getHook().deleteOriginal().queue(s -> {}, f -> {});
+    }
+
+    private void volumeDown(ButtonInteraction interaction, LavalinkPlayer player) {
+        int volume = player.getVolume();
+
+        checkVolume(volume, false);
+        player.setVolume(volume - 25).subscribe(s -> updateMessage());
+
+        interaction.getHook().deleteOriginal().queue(s -> {}, f -> {});
     }
 
     private void seekPlus15s(ButtonInteraction interaction, LavalinkPlayer player) {
@@ -189,6 +241,14 @@ public class MusicMessage {
         interaction.getHook().deleteOriginal().queue(s -> {}, f -> {});
     }
 
+    private void restartTrack(ButtonInteraction interaction, LavalinkPlayer player) {
+        checkIsSeekable(player);
+
+        player.setPosition(0L).subscribe();
+
+        interaction.getHook().deleteOriginal().queue(s -> {}, f -> {});
+    }
+
     public void sendMessageWhenStarts() {
         if (messageChannel == null) return;
 
@@ -198,7 +258,7 @@ public class MusicMessage {
         MessageChannelUnion channel = currentPlayerMessage == null ?
                 messageChannel : currentPlayerMessage.getChannel();
 
-        channel.sendMessageEmbeds(getEmbed()).setComponents(getActionRows(true))
+        channel.sendMessageEmbeds(getEmbed()).setComponents(getActionRows())
                 .queue(s -> currentPlayerMessage = s, f -> {});
     }
 
