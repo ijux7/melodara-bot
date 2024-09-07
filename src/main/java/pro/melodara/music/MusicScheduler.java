@@ -75,6 +75,7 @@ public class MusicScheduler {
     }
 
     public void startTrack(Track track) {
+        previousTrack = currentTrack;//
         currentTrack = track;
 
         musicManager.getLink().ifPresent(
