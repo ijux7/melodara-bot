@@ -118,7 +118,7 @@ public class MusicMessage {
             )
         );
     }
-    // Done in 1 hour, don't hit me
+    // Done in 1 hour, don't hit me - I'll not, you're my prettiest boy <3
     public void handleButtons(ButtonInteraction interaction) {
         if (!interaction.getMessage().getId().equals(currentPlayerMessage.getId()))
             return;

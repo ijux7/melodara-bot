@@ -54,16 +54,11 @@ public class MusicScheduler {
                 this.startTrack(nextTrack);
             } else {
                 musicManager.stop();
-                return;
             }
-
-            this.previousTrack = this.currentTrack;
         }
     }
 
     public void onTrackStart(Track track) {
-        currentTrack = track;
-
         musicManager.getMusicMessage().sendMessageWhenStarts();
     }
     
@@ -75,7 +70,15 @@ public class MusicScheduler {
     }
 
     public void startTrack(Track track) {
-        previousTrack = currentTrack;//
+        startTrack(track, true);
+    }
+
+    public void startTrack(Track track, boolean markAsPrev) {
+        if (markAsPrev)
+            previousTrack = currentTrack;
+        else
+            previousTrack = null;
+
         currentTrack = track;
 
         musicManager.getLink().ifPresent(
@@ -90,7 +93,6 @@ public class MusicScheduler {
         if(trackQueue.isEmpty()) {
             musicManager.stop();
         } else {
-            previousTrack = currentTrack;
             startTrack(trackQueue.poll());
         }
     }
@@ -102,10 +104,7 @@ public class MusicScheduler {
         if (prev == null) return;
 
         insertAs(0, curr);
-        startTrack(prev);
-
-        this.currentTrack = previousTrack; // force НАСИЛЬНО
-        this.previousTrack = null;
+        startTrack(prev, false);
     }
 
     public void clear() {
