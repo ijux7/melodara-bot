@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import pro.melodara.Melodara;
 import pro.melodara.exceptions.CommandExecutionException;
 import pro.melodara.music.MusicManager;
+import pro.melodara.music.RepeatType;
 import pro.melodara.utils.StringFormat;
 
 import java.util.*;
@@ -42,6 +43,12 @@ public class MusicMessage {
             return embed.build();
         }
 
+        RepeatType repeatType = musicManager.getScheduler().getRepeatType();
+
+        if (!repeatType.equals(RepeatType.NONE)) {
+            embed.setDescription(":exclamation: Repeating this **" + repeatType.getName().toLowerCase() + "**!");
+        }
+
         LavalinkPlayer player = playerOptional.get();
         List<Track> nextQueue = musicManager.getScheduler().getNextQueue();
         List<Track> previousQueue = musicManager.getScheduler().getPreviousQueue();
@@ -50,11 +57,14 @@ public class MusicMessage {
 
         embed.setTitle(StringFormat.limitString(50, currentTrack.getInfo().getTitle()));
         embed.setUrl(currentTrack.getInfo().getUri());
-        embed.setThumbnail(currentTrack.getInfo().getArtworkUrl());
+        embed.setThumbnail(currentTrack.getInfo().getArtworkUrl() == null ?
+                "https://i.pinimg.com/736x/c6/9e/7b/c69e7bd7d3eaeb35a669925fd37e0a9e--vinyl-records-vinyls.jpg" :
+                currentTrack.getInfo().getArtworkUrl());
 
         embed.addField(new MessageEmbed.Field(
                 "Duration",
-                StringFormat.getDurationWithNames(currentTrack.getInfo().getLength()),
+                currentTrack.getInfo().getLength() > 43200000L ?
+                    "Infinity" : StringFormat.getDurationWithNames(currentTrack.getInfo().getLength()),
                 true
         ));
         embed.addField(new MessageEmbed.Field(
@@ -63,19 +73,26 @@ public class MusicMessage {
                 true
         ));
         embed.addField(new MessageEmbed.Field(
-                "Duration",
-                StringFormat.getDurationWithNames(currentTrack.getInfo().getLength()),
+                "Filter",
+                "None",
                 true
         ));
 
         embed.addField(new MessageEmbed.Field(
                 "Next/Previous Tracks",
-                "- Next: " + (nextTrack == null ? "No next track" :
-                        "[" + StringFormat.limitString(50, nextTrack.getInfo().getTitle()) + "](" +
+                (nextTrack == null ? "No next track" :
+                        "[" + StringFormat.limitString(
+                                50,
+                                nextTrack.getInfo().getTitle().replaceAll("[\\[\\]]", "")
+                        ) + "](" +
                                 nextTrack.getInfo().getUri() + ")") +
                         (nextQueue.size() > 1 ? " (then " + (nextQueue.size() - 1) + " tracks)" : "") + "\n" +
-                        "- Previous: " + (previousTrack == null ? "No previous tracks" :
-                        "[" + StringFormat.limitString(50, previousTrack.getInfo().getTitle()) + "](" +
+
+                        (previousTrack == null ? "No previous tracks" :
+                        "[" + StringFormat.limitString(
+                                50,
+                                previousTrack.getInfo().getTitle().replaceAll("[\\[\\]]", "")
+                        ) + "](" +
                                 previousTrack.getInfo().getUri() + ")") +
                         (previousQueue.size() > 1 ? " (and " + (previousQueue.size() - 1) + " more tracks)" : ""),
                 false
@@ -123,7 +140,7 @@ public class MusicMessage {
                     Button.secondary(
                             "repeat",
                             Emoji.fromFormatted("<:repeat:1282098439974551714>")
-                    ).withDisabled(!Objects.requireNonNull(player.getTrack()).getInfo().isSeekable()),
+                    ).withDisabled(!checkIfCanRepeat()),
                     Button.secondary(
                             "stop",
                             Emoji.fromFormatted("<:stop:1282102051270299729>")
@@ -138,6 +155,30 @@ public class MusicMessage {
                     )
             )
         );
+    }
+
+    private boolean checkIfCanRepeat() {
+        boolean canRepeat = true;
+
+        for (Track track : this.musicManager.getScheduler().getNextQueue()) {
+            if (!track.getInfo().isSeekable()) {
+                canRepeat = false;
+                break;
+            }
+        }
+
+        for (Track track : this.musicManager.getScheduler().getPreviousQueue()) {
+            if (!track.getInfo().isSeekable()) {
+                canRepeat = false;
+                break;
+            }
+        }
+
+        if (!this.musicManager.getScheduler().getCurrentTrack().getInfo().isSeekable()) {
+            canRepeat = false;
+        }
+
+        return canRepeat;
     }
 
     public void handleButtons(ButtonInteraction interaction) {
@@ -159,7 +200,7 @@ public class MusicMessage {
             case "pause" -> pauseTrack(interaction, playerOptional.get());
             case "next" -> playNextTrack(interaction);
             case "restart" -> restartTrack(interaction, playerOptional.get());
-            case "repeat" -> {} // todo: repeat, check RepeatType enum class
+            case "repeat" -> repeatQueue(interaction);
             case "stop" -> stopPlaying(interaction);
             case "volume-down" -> volumeDown(interaction, playerOptional.get());
             case "volume-up" -> volumeUp(interaction, playerOptional.get());
@@ -191,6 +232,14 @@ public class MusicMessage {
 
     private void playPreviousTrack(ButtonInteraction interaction) {
         this.musicManager.getScheduler().playPreviousTrack();
+
+        interaction.getHook().deleteOriginal().queue(s -> {}, f -> {});
+    }
+
+    private void repeatQueue(ButtonInteraction interaction) {
+        musicManager.getScheduler().repeatQueue();
+
+        updateMessage();
 
         interaction.getHook().deleteOriginal().queue(s -> {}, f -> {});
     }

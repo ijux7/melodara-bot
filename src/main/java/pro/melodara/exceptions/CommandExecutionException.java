@@ -1,10 +1,15 @@
 package pro.melodara.exceptions;
 
 public class CommandExecutionException extends RuntimeException {
-    private final String errorCode;
-    public CommandExecutionException(String errorCode) {
-        super();
-        this.errorCode=errorCode;
+    private String errorCode = null;
+
+    public CommandExecutionException(String errorDescription) {
+        super(errorDescription);
+    }
+
+    public CommandExecutionException(String errorDescription, String errorCode) {
+        super(errorDescription);
+        this.errorCode = errorCode;
     }
 
     public String getErrorCode() {

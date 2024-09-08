@@ -15,7 +15,6 @@ public class MusicManager {
     private final long guildId;
     private final MusicScheduler scheduler;
     private final MusicMessage musicMessage;
-    private RepeatType repeatType = RepeatType.NONE;
 
     public MusicManager(long guildId, LavalinkManager lavalinkManager, Melodara melodara) {
         this.melodara = melodara;
@@ -36,18 +35,6 @@ public class MusicManager {
         scheduler.clear();
         getPlayer().ifPresent((player) -> player.setPaused(false).setTrack(null).subscribe());
         musicMessage.delete();
-    }
-
-    public RepeatType repeat() {
-        if (repeatType == RepeatType.NONE) {
-            repeatType = RepeatType.TRACK;
-        } else if (repeatType == RepeatType.TRACK) {
-            repeatType = RepeatType.QUEUE;
-        } else {
-            repeatType = RepeatType.NONE;
-        }
-
-        return repeatType;
     }
 
     public Optional<Link> getLink() {

@@ -13,6 +13,7 @@ public class MusicScheduler {
     private final Queue<Track> nextQueue = new LinkedList<>();
     private final Queue<Track> previousQueue = new LinkedList<>();
     private Track currentTrack = null;
+    private RepeatType repeatType = RepeatType.NONE;
 
     public MusicScheduler(MusicManager manager) {
         this.manager = manager;
@@ -33,7 +34,7 @@ public class MusicScheduler {
         );
     }
 
-    public void enqueue(List<Track> tracks) {
+    public void enqueue(List<Track> tracks, boolean updateMessage) {
         this.nextQueue.addAll(tracks);
 
         this.manager.getPlayer().ifPresentOrElse(
@@ -41,11 +42,15 @@ public class MusicScheduler {
                     if (player.getTrack() == null)
                         playNextTrack();
 
-                    if (!this.nextQueue.isEmpty())
+                    if (!this.nextQueue.isEmpty() && updateMessage)
                         manager.getMusicMessage().updateMessage();
                 },
                 this::playNextTrack
         );
+    }
+
+    public void enqueue(List<Track> tracks) {
+        enqueue(tracks, true);
     }
 
     private void enqueueInNextQueueAsZero(Track track) {
@@ -67,7 +72,7 @@ public class MusicScheduler {
                 link -> link.createOrUpdatePlayer()
                         .setTrack(track)
                         .setVolume(100) // default 100
-                        .subscribe(s -> {}, f -> playNextTrack())
+                        .subscribe(s -> manager.getMusicMessage().sendMessageWhenStarts(), f -> playNextTrack())
         );
     }
 
@@ -95,6 +100,7 @@ public class MusicScheduler {
         this.nextQueue.clear();
         this.previousQueue.clear();
         this.currentTrack = null;
+        this.repeatType = RepeatType.NONE;
     }
 
     public void shuffleQueue() {
@@ -126,15 +132,39 @@ public class MusicScheduler {
         return queue.isEmpty() ? null : queue.get(0);
     }
 
+    public void repeatQueue() {
+        if (repeatType == RepeatType.NONE) {
+            repeatType = RepeatType.TRACK;
+        } else if (repeatType == RepeatType.TRACK) {
+            repeatType = RepeatType.QUEUE;
+        } else {
+            repeatType = RepeatType.NONE;
+        }
+    }
+
+    public RepeatType getRepeatType() {
+        return this.repeatType;
+    }
+
     // events
 
     public void onTrackEnd(Track lastTrack, Message.EmittedEvent.TrackEndEvent.AudioTrackEndReason endReason) {
         if (endReason.getMayStartNext()) {
-            playNextTrack();
+            if (getRepeatType().equals(RepeatType.TRACK)) {
+                startTrack(lastTrack);
+            } else if (getRepeatType().equals(RepeatType.QUEUE) && nextQueue.isEmpty()) {
+                enqueueInPreviousQueueAsZero(lastTrack);
+                List<Track> queue = getPreviousQueue();
+                previousQueue.clear();
+                Collections.reverse(queue);
+
+                enqueue(queue, false);
+            } else {
+                playNextTrack();
+            }
         }
     }
 
     public void onTrackStart(Track track) {
-        manager.getMusicMessage().sendMessageWhenStarts();
     }
 }
