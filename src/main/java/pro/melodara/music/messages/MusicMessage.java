@@ -213,7 +213,6 @@ public class MusicMessage {
 
         checkVolume(volume, true);
         player.setVolume(volume + 25).subscribe(s -> updateMessage());
-        updateMessage();
 
         interaction.getHook().deleteOriginal().queue(s -> {}, f -> {});
     }
