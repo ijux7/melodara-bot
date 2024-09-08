@@ -30,8 +30,6 @@ public class MusicMessage {
 
     public MessageEmbed getEmbed() {
         Track currentTrack = musicManager.getScheduler().getCurrentTrack();
-        Track nextTrack = musicManager.getScheduler().getNextTrack();
-        Track previousTrack = musicManager.getScheduler().getPreviousTrack();
 
         EmbedBuilder embed = new EmbedBuilder();
         embed.setFooter(Melodara.PROJECT_NAME + " version " + Melodara.VERSION);
@@ -45,7 +43,10 @@ public class MusicMessage {
         }
 
         LavalinkPlayer player = playerOptional.get();
-        Queue<Track> tracks = musicManager.getScheduler().getQueue();
+        List<Track> nextQueue = musicManager.getScheduler().getNextQueue();
+        List<Track> previousQueue = musicManager.getScheduler().getPreviousQueue();
+        Track nextTrack = musicManager.getScheduler().getNextTrack();
+        Track previousTrack = musicManager.getScheduler().getPreviousTrack();
 
         embed.setTitle(StringFormat.limitString(50, currentTrack.getInfo().getTitle()));
         embed.setUrl(currentTrack.getInfo().getUri());
@@ -72,10 +73,11 @@ public class MusicMessage {
                 "- Next: " + (nextTrack == null ? "No next track" :
                         "[" + StringFormat.limitString(50, nextTrack.getInfo().getTitle()) + "](" +
                                 nextTrack.getInfo().getUri() + ")") +
-                        (tracks.size() > 1 ? " (then " + (tracks.size() - 1) + " tracks)" : "") + "\n" +
-                        "- Previous: " + (previousTrack == null ? "No previous track" :
+                        (nextQueue.size() > 1 ? " (then " + (nextQueue.size() - 1) + " tracks)" : "") + "\n" +
+                        "- Previous: " + (previousTrack == null ? "No previous tracks" :
                         "[" + StringFormat.limitString(50, previousTrack.getInfo().getTitle()) + "](" +
-                                previousTrack.getInfo().getUri() + ")"),
+                                previousTrack.getInfo().getUri() + ")") +
+                        (previousQueue.size() > 1 ? " (and " + (previousQueue.size() - 1) + " more tracks)" : ""),
                 false
         ));
 
@@ -182,7 +184,7 @@ public class MusicMessage {
     }
 
     private void playNextTrack(ButtonInteraction interaction) {
-        this.musicManager.getScheduler().skipTrack();
+        this.musicManager.getScheduler().playNextTrack();
 
         interaction.getHook().deleteOriginal().queue(s -> {}, f -> {});
     }

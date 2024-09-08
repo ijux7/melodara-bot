@@ -38,6 +38,18 @@ public class MusicManager {
         musicMessage.delete();
     }
 
+    public RepeatType repeat() {
+        if (repeatType == RepeatType.NONE) {
+            repeatType = RepeatType.TRACK;
+        } else if (repeatType == RepeatType.TRACK) {
+            repeatType = RepeatType.QUEUE;
+        } else {
+            repeatType = RepeatType.NONE;
+        }
+
+        return repeatType;
+    }
+
     public Optional<Link> getLink() {
         return Optional.ofNullable(this.lavalinkManager.getClient().getLinkIfCached(this.guildId));
     }
@@ -59,17 +71,5 @@ public class MusicManager {
 
     public MusicMessage getMusicMessage() {
         return musicMessage;
-    }
-
-    public RepeatType repeat() {
-        if (repeatType == RepeatType.NONE) {
-            repeatType = RepeatType.TRACK;
-        } else if (repeatType == RepeatType.TRACK) {
-            repeatType = RepeatType.QUEUE;
-        } else {
-            repeatType = RepeatType.NONE;
-        }
-
-        return repeatType;
     }
 }
