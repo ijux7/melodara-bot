@@ -3,10 +3,7 @@ package pro.melodara.music;
 import dev.arbjerg.lavalink.client.player.Track;
 import dev.arbjerg.lavalink.protocol.v4.Message;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 public class MusicScheduler {
     private final MusicManager manager;
@@ -64,11 +61,11 @@ public class MusicScheduler {
         List<Track> TEMP = new LinkedList<>(previousQueue);
         TEMP.add(0, track);
         previousQueue.clear();
-        TEMP.forEach(previousQueue::offer);
+        previousQueue.addAll(TEMP);
     }
 
     private void startTrack(Track track) {
-        manager.getLink().ifPresent(
+       manager.getLink().ifPresent(
                 link -> link.createOrUpdatePlayer()
                         .setTrack(track)
                         .setVolume(100) // default 100
@@ -148,13 +145,16 @@ public class MusicScheduler {
 
     // events
 
+    /**
+     * @apiNote lastTrack returning object of ENDED track (with ending position)
+     */
     public void onTrackEnd(Track lastTrack, Message.EmittedEvent.TrackEndEvent.AudioTrackEndReason endReason) {
         if (endReason.getMayStartNext()) {
             if (getRepeatType().equals(RepeatType.TRACK)) {
-                startTrack(lastTrack);
+                startTrack(this.currentTrack);
             } else if (getRepeatType().equals(RepeatType.QUEUE) && nextQueue.isEmpty()) {
-                enqueueInPreviousQueueAsZero(lastTrack);
-                List<Track> queue = getPreviousQueue();
+                enqueueInPreviousQueueAsZero(this.currentTrack);
+                List<Track> queue = new ArrayList<>(getPreviousQueue());
                 previousQueue.clear();
                 Collections.reverse(queue);
 
