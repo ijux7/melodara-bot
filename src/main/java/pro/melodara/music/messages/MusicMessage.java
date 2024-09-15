@@ -50,8 +50,9 @@ public class MusicMessage {
         }
 
         LavalinkPlayer player = playerOptional.get();
-        List<Track> nextQueue = musicManager.getScheduler().getNextQueue();
-        List<Track> previousQueue = musicManager.getScheduler().getPreviousQueue();
+
+        // todo: queue list
+
         Track nextTrack = musicManager.getScheduler().getNextTrack();
         Track previousTrack = musicManager.getScheduler().getPreviousTrack();
 
@@ -80,22 +81,7 @@ public class MusicMessage {
 
         embed.addField(new MessageEmbed.Field(
                 "Next/Previous Tracks",
-                (nextTrack == null ? (musicManager.getScheduler().getRepeatType().equals(RepeatType.QUEUE) ?
-                            "Repeating queue..." : "No next track") :
-                        "[" + StringFormat.limitString(
-                                50,
-                                nextTrack.getInfo().getTitle().replaceAll("[\\[\\]]", "")
-                        ) + "](" +
-                                nextTrack.getInfo().getUri() + ")") +
-                        (nextQueue.size() > 1 ? " (then " + (nextQueue.size() - 1) + " tracks)" : "") + "\n" +
-
-                        (previousTrack == null ? "No previous tracks" :
-                        "[" + StringFormat.limitString(
-                                50,
-                                previousTrack.getInfo().getTitle().replaceAll("[\\[\\]]", "")
-                        ) + "](" +
-                                previousTrack.getInfo().getUri() + ")") +
-                        (previousQueue.size() > 1 ? " (and " + (previousQueue.size() - 1) + " more tracks)" : ""),
+                "N/A >>> Total: " + this.musicManager.getScheduler().getTracks().size(),
                 false
         ));
 
@@ -131,10 +117,7 @@ public class MusicMessage {
                     Button.secondary(
                             "next",
                             Emoji.fromFormatted("<:arrowright:1279770380462194698>")
-                    ).withDisabled(
-                            musicManager.getScheduler().getNextTrack() == null ||
-                                    !musicManager.getScheduler().getRepeatType().equals(RepeatType.QUEUE)
-                    )
+                    ).withDisabled(musicManager.getScheduler().getNextTracks().isEmpty())
             ),
             ActionRow.of(
                     Button.secondary(
@@ -164,14 +147,14 @@ public class MusicMessage {
     private boolean checkIfCanRepeat() {
         boolean canRepeat = true;
 
-        for (Track track : this.musicManager.getScheduler().getNextQueue()) {
+        for (Track track : this.musicManager.getScheduler().getNextTracks()) {
             if (!track.getInfo().isSeekable()) {
                 canRepeat = false;
                 break;
             }
         }
 
-        for (Track track : this.musicManager.getScheduler().getPreviousQueue()) {
+        for (Track track : this.musicManager.getScheduler().getPreviousTracks()) {
             if (!track.getInfo().isSeekable()) {
                 canRepeat = false;
                 break;

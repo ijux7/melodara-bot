@@ -13,14 +13,14 @@ public class MusicManager {
     private final Melodara melodara;
     private final LavalinkManager lavalinkManager;
     private final long guildId;
-    private final MusicScheduler2 scheduler;
+    private final MusicScheduler scheduler;
     private final MusicMessage musicMessage;
 
     public MusicManager(long guildId, LavalinkManager lavalinkManager, Melodara melodara) {
         this.melodara = melodara;
         this.lavalinkManager = lavalinkManager;
         this.guildId = guildId;
-        this.scheduler = new MusicScheduler2(this);
+        this.scheduler = new MusicScheduler(this);
         this.musicMessage = new MusicMessage(this);
     }
 
@@ -52,7 +52,7 @@ public class MusicManager {
         return Optional.empty();
     }
 
-    public MusicScheduler2 getScheduler() {
+    public MusicScheduler getScheduler() {
         return scheduler;
     }
 
