@@ -5,14 +5,14 @@ import dev.arbjerg.lavalink.protocol.v4.Message;
 
 import java.util.*;
 
-public class MusicScheduler {
+public class MusicScheduler2 {
     private final MusicManager manager;
     private final Queue<Track> nextQueue = new LinkedList<>();
     private final Queue<Track> previousQueue = new LinkedList<>();
     private Track currentTrack = null;
     private RepeatType repeatType = RepeatType.NONE;
 
-    public MusicScheduler(MusicManager manager) {
+    public MusicScheduler2(MusicManager manager) {
         this.manager = manager;
     }
 
