@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.managers.AudioManager;
 import pro.melodara.Melodara;
+import pro.melodara.exceptions.CommandExecutionException;
 import pro.melodara.music.MusicManager;
 import pro.melodara.music.TrackLoaderListener;
 import pro.melodara.utils.commands.CommandSample;
@@ -42,7 +43,6 @@ public class Play extends CommandSample {
         MusicManager musicManager = melodara.getLavalinkManager().getMusicManager(guildId);
 
         String track = trackRaw.toLowerCase().startsWith("https://") ? trackRaw : "ytsearch:" + trackRaw;
-
         link.loadItem(track).subscribe(new TrackLoaderListener(event, musicManager));
     }
 
@@ -50,19 +50,19 @@ public class Play extends CommandSample {
         GuildVoiceState state = member.getVoiceState();
 
         if (state == null)
-            throw new NullPointerException("1"); // TODO: set exceptions
+            throw new CommandExecutionException("Failed to get your voice information!");
 
         AudioChannelUnion channel = state.getChannel();
         if (channel == null)
-            throw new NullPointerException("2");
+            throw new CommandExecutionException("You must be in the voice channel to execute this command");
 
         if (!guild.getSelfMember().hasPermission(channel, Permission.VOICE_CONNECT))
-            throw new IllegalArgumentException("3");
+            throw new CommandExecutionException("I don't have permission to join your channel!");
         else if (
                 channel.getMembers().size() == channel.asVoiceChannel().getUserLimit() &&
                         !guild.getSelfMember().hasPermission(channel, Permission.VOICE_MOVE_OTHERS)
         )
-            throw new IllegalArgumentException("4");
+            throw new CommandExecutionException("Voice channel is full! Give permission \"Move Members\"!");
 
         AudioManager manager = guild.getAudioManager();
 

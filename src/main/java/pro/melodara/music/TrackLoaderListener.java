@@ -16,6 +16,7 @@ public class TrackLoaderListener extends AbstractAudioLoadResultHandler {
     public TrackLoaderListener(SlashCommandInteractionEvent event, MusicManager musicManager) {
         this.event = event;
         this.musicManager = musicManager;
+        musicManager.getMusicMessage().setChannelUnion(event.getChannel());
     }
 
     @Override
@@ -40,7 +41,7 @@ public class TrackLoaderListener extends AbstractAudioLoadResultHandler {
             tracks.add(track);
         }
 
-        musicManager.getScheduler().addPlaylist(tracks);
+        musicManager.getScheduler().enqueue(tracks);
 
         event.getHook()
                 .editOriginal(":notes: Playlist **" + playlistLoaded.getInfo().getName() + "** with **" +
@@ -64,7 +65,7 @@ public class TrackLoaderListener extends AbstractAudioLoadResultHandler {
         TrackRequester trackRequester = new TrackRequester(event.getUser().getIdLong());
 
         track.setUserData(trackRequester);
-        musicManager.getScheduler().addTrack(track);
+        musicManager.getScheduler().enqueue(track);
 
         event.getHook()
                 .editOriginal(":notes: Track [**" + track.getInfo().getTitle() + "**](<" +

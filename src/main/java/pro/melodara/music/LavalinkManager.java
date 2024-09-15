@@ -88,12 +88,11 @@ public class LavalinkManager {
         });
 
         // IMPORTANT: tracks
-        client.on(TrackStartEvent.class).subscribe((event) -> {
-//            getMusicManager(event.getGuildId()).getScheduler().startTrack(event.getTrack());
-        });
-        client.on(TrackEndEvent.class).subscribe((event) -> {
-            getMusicManager(event.getGuildId()).getScheduler().onTrackEnd(event.getTrack(), event.getEndReason());
-        });
+        client.on(TrackStartEvent.class).subscribe((event) ->
+                getMusicManager(event.getGuildId()).getScheduler().onTrackStart(event.getTrack()));
+        client.on(TrackEndEvent.class).subscribe((event) ->
+            getMusicManager(event.getGuildId()).getScheduler().onTrackEnd(event.getTrack(), event.getEndReason())
+        );
 
         // random events
         client.on(EmittedEvent.class).subscribe(ignored -> {});
@@ -112,15 +111,23 @@ public class LavalinkManager {
         return client;
     }
 
-    public MusicManager getMusicManager(long guildId) {
-        MusicManager musicManager = musicManagers.get(guildId);
+    public MusicManager getMusicManager(long guildId, boolean create) {
+        synchronized (this) {
+            MusicManager musicManager = musicManagers.get(guildId);
 
-        if (musicManager == null) {
-            musicManager = new MusicManager(guildId, this);
+            if(create) {
+                if (musicManager == null) {
+                    musicManager = new MusicManager(guildId, this, melodara);
 
-            musicManagers.put(guildId, musicManager);
+                    musicManagers.put(guildId, musicManager);
+                }
+            }
+
+            return musicManager;
         }
+    }
 
-        return musicManager;
+    public MusicManager getMusicManager(long guildId) {
+        return getMusicManager(guildId, true);
     }
 }
