@@ -51,10 +51,8 @@ public class MusicMessage {
 
         LavalinkPlayer player = playerOptional.get();
 
-        // todo: queue list
-
-        Track nextTrack = musicManager.getScheduler().getNextTrack();
-        Track previousTrack = musicManager.getScheduler().getPreviousTrack();
+        List<Track> nextTracks = this.musicManager.getScheduler().getNextTracks();
+        List<Track> previousTracks = this.musicManager.getScheduler().getPreviousTracks();
 
         embed.setTitle(StringFormat.limitString(50, currentTrack.getInfo().getTitle()));
         embed.setUrl(currentTrack.getInfo().getUri());
@@ -80,8 +78,25 @@ public class MusicMessage {
         ));
 
         embed.addField(new MessageEmbed.Field(
-                "Next/Previous Tracks",
-                "N/A >>> Total: " + this.musicManager.getScheduler().getTracks().size(),
+                "Next Tracks",
+                (nextTracks.isEmpty() ? "No next tracks" : String.format(
+                        "[%s](%s)",
+                        StringFormat.limitString(50, nextTracks.get(0).getInfo().getTitle()),
+                        nextTracks.get(0).getInfo().getUri()
+                )) + " " + (nextTracks.size() > 1 ? String.format(
+                        "(Then %s tracks more)", nextTracks.size() - 1
+                ) : ""),
+                false
+        ));
+        embed.addField(new MessageEmbed.Field(
+                "Previous Tracks",
+                (previousTracks.isEmpty() ? "No previous tracks" : String.format(
+                        "[%s](%s)",
+                        StringFormat.limitString(50, previousTracks.get(0).getInfo().getTitle()),
+                        previousTracks.get(0).getInfo().getUri()
+                )) + " " + (previousTracks.size() > 1 ? String.format(
+                        "(And %s tracks more)", previousTracks.size() - 1
+                ) : ""),
                 false
         ));
 
@@ -99,7 +114,10 @@ public class MusicMessage {
                     Button.secondary(
                             "previous",
                             Emoji.fromFormatted("<:arrowleft:1279770369947074560>")
-                    ).withDisabled(musicManager.getScheduler().getPreviousTrack() == null),
+                    ).withDisabled(
+                            musicManager.getScheduler().getPreviousTrack() == null &&
+                                    !musicManager.getScheduler().getRepeatType().equals(RepeatType.QUEUE)
+                    ),
                     Button.secondary(
                             "minus15s",
                             Emoji.fromFormatted("<:minus15s:1279773771783475220>")
@@ -117,7 +135,10 @@ public class MusicMessage {
                     Button.secondary(
                             "next",
                             Emoji.fromFormatted("<:arrowright:1279770380462194698>")
-                    ).withDisabled(musicManager.getScheduler().getNextTracks().isEmpty())
+                    ).withDisabled(
+                            musicManager.getScheduler().getNextTrack() == null &&
+                                    !musicManager.getScheduler().getRepeatType().equals(RepeatType.QUEUE)
+                    )
             ),
             ActionRow.of(
                     Button.secondary(
