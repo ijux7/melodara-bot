@@ -80,7 +80,8 @@ public class MusicMessage {
 
         embed.addField(new MessageEmbed.Field(
                 "Next/Previous Tracks",
-                (nextTrack == null ? "No next track" :
+                (nextTrack == null ? (musicManager.getScheduler().getRepeatType().equals(RepeatType.QUEUE) ?
+                            "Repeating queue..." : "No next track") :
                         "[" + StringFormat.limitString(
                                 50,
                                 nextTrack.getInfo().getTitle().replaceAll("[\\[\\]]", "")
@@ -130,7 +131,10 @@ public class MusicMessage {
                     Button.secondary(
                             "next",
                             Emoji.fromFormatted("<:arrowright:1279770380462194698>")
-                    ).withDisabled(musicManager.getScheduler().getNextTrack() == null)
+                    ).withDisabled(
+                            musicManager.getScheduler().getNextTrack() == null ||
+                                    !musicManager.getScheduler().getRepeatType().equals(RepeatType.QUEUE)
+                    )
             ),
             ActionRow.of(
                     Button.secondary(
