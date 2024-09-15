@@ -2,10 +2,13 @@ package pro.melodara.music;
 
 import dev.arbjerg.lavalink.client.player.Track;
 import dev.arbjerg.lavalink.protocol.v4.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class MusicScheduler {
+    private static final Logger log = LoggerFactory.getLogger(MusicScheduler.class);
     private final MusicManager manager;
     private final Queue<Track> nextQueue = new LinkedList<>();
     private final Queue<Track> previousQueue = new LinkedList<>();
@@ -69,7 +72,7 @@ public class MusicScheduler {
                 link -> link.createOrUpdatePlayer()
                         .setTrack(track)
                         .setVolume(100) // default 100
-                        .subscribe(s -> manager.getMusicMessage().sendMessageWhenStarts(), f -> playNextTrack())
+                        .subscribe(s -> manager.getMusicMessage().sendMessageWhenStarts(), Throwable::printStackTrace)
         );
     }
 
