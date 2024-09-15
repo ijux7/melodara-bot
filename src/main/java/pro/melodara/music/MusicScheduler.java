@@ -87,15 +87,11 @@ public class MusicScheduler {
             return nextTracks;
         }
 
-        for (int i = 0; i < this.tracks.size() - 1; i++) {
+        for (int i = 0; i < this.tracks.size(); i++) {
             if (i > this.currentTrackIndex) {
                 nextTracks.add(this.tracks.get(i));
             }
         }
-
-        System.out.println(" --- " + this.tracks.size());
-        System.out.println(currentTrackIndex);
-        System.out.println(nextTracks);
 
         return nextTracks;
     }
@@ -107,7 +103,7 @@ public class MusicScheduler {
             return previousTracks;
         }
 
-        for (int i = 0; i < this.tracks.size() - 1; i++) {
+        for (int i = 0; i < this.tracks.size(); i++) {
             if (i < this.currentTrackIndex) {
                 previousTracks.add(this.tracks.get(i));
             }
